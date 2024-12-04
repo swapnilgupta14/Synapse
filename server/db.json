@@ -1,0 +1,25 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "username": "admin",
+            "email": "admin@gmail.com",
+            "password": "admin123",
+            "role": "admin"
+        }
+    ],
+    "tasks": [
+        {
+            "id": 1,
+            "title": "Task 1",
+            "description": "Description 1",
+            "status": "pending"
+        },
+        {
+            "id": 2,
+            "title": "Task 2",
+            "description": "Description 2",
+            "status": "completed"
+        }
+    ]
+}
