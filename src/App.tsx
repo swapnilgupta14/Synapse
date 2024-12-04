@@ -14,11 +14,11 @@ import LandingPage from './LandingPage';
 import ProtectedRoute from './ProtectedRoute';
 
 import { User } from './types';
-import { useDispatch } from 'react-redux';
+// import { useDispatch } from 'react-redux';
 
 
 const App: React.FC = () => {
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
 
     useEffect(() => {
         const adminExists = JSON.parse(localStorage.getItem('SignedUpUsers') || '[]').find(
@@ -41,7 +41,7 @@ const App: React.FC = () => {
                 JSON.stringify([...existingUsers, adminUser])
             );
         }
-    }, [dispatch]);
+    }, []);
 
     return (
         <Provider store={store}>

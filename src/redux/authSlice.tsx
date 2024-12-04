@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User, AuthState } from '../types';
 
-const savedUser = localStorage.getItem('userCurrent');
+// const savedUser = localStorage.getItem('userCurrent');
 const savedToken = localStorage.getItem('token');
 
 const initialState: AuthState = {
-  user: savedUser ? JSON.parse(savedUser) : null,
+  user: JSON.parse(localStorage.getItem('userCurrent') || 'null'),
   isAuthenticated: !!savedToken,
   token: savedToken || null,
 };

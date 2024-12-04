@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { AlertCircle, CheckCircle2, Clock, BarChart3, Group } from 'lucide-react';
 import { RootState, Statistics, Task } from '../../types';
 import { User2 } from "lucide-react"
-// import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../redux/store';
 import TaskDetailPopup from '../popups/TaskDetailPopup';
 import { User } from '../../types';
@@ -413,7 +412,7 @@ const AdminDashboard: React.FC = () => {
   console.log(priorityData);
 
   return (
-    <div className='w-full h-fit flex flex-col gap-4 px-6'>
+    <div className='w-full h-screen flex flex-col gap-4 px-6'>
       <header className="flex w-full justify-between items-center py-4 pb-0 my-2">
         <div>
           <p className="text-xl font-medium text-gray-800">
@@ -470,29 +469,6 @@ const AdminDashboard: React.FC = () => {
           </button>
         </div>
       </header>
-      <div className="h-[50vh] w-full flex gap-4">
-        <div className="flex-1 h-full flex">
-          <GridComponent />
-        </div>
-        <div className="w-[1/4] h-full">
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Completion Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LineChart width={500} height={300} data={getCompletionTrendData()} className="p-0 pr-10">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="completed" stroke="#10B981" name="Completed" />
-                <Line type="monotone" dataKey="created" stroke="#6366F1" name="Created" />
-              </LineChart>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
 
 
       <Card>
@@ -585,6 +561,31 @@ const AdminDashboard: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+
+      <div className="h-[50vh] w-full flex gap-4">
+        <div className="flex-1 h-full flex">
+          <GridComponent />
+        </div>
+        <div className="w-[1/4] h-full">
+          <Card>
+            <CardHeader>
+              <CardTitle>Task Completion Trend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LineChart width={500} height={300} data={getCompletionTrendData()} className="p-0 pr-10">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="completed" stroke="#10B981" name="Completed" />
+                <Line type="monotone" dataKey="created" stroke="#6366F1" name="Created" />
+              </LineChart>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <BulkActionsDialog />
       <ArchiveDialog />
