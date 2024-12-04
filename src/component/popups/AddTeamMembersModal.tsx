@@ -13,6 +13,8 @@ const AddTeamMembersModal: React.FC<{
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
 
+    console.log(selectedMembers, "test");
+
     const currentTeam = useAppSelector(state =>
         state.teams.teams.find(team => team.teamId === teamId)
     );

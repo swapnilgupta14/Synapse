@@ -30,18 +30,18 @@ const UserDashboard = () => {
         }
     }, []);
 
-    const teamMembers = useMemo(() => {
-        const users = localStorage.getItem('SignedUpUsers');
-        return users
-            ? JSON.parse(users).filter((item: User) => item.role === 'Team Member')
-            : [];
-    }, []);
+    // const teamMembers = useMemo(() => {
+    //     const users = localStorage.getItem('SignedUpUsers');
+    //     return users
+    //         ? JSON.parse(users).filter((item: User) => item.role === 'Team Member')
+    //         : [];
+    // }, []);
 
     const workTeam = useMemo(() => {
         if (!currentUser) return [];
         const teams = JSON.parse(localStorage.getItem('teams') || '[]');
-        const memberTeams = teams.filter((team: any) =>
-            team.members.some((member: any) => member.id === currentUser.id && member.role === "Team Member")
+        const memberTeams = teams.filter((team: Team) =>
+            team.members.some((member: User) => member.id === currentUser.id && member.role === "Team Member")
         );
         return memberTeams;
     }, []);

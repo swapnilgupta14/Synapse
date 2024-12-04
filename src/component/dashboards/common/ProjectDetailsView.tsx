@@ -9,7 +9,7 @@ import {
   Edit,
   Save,
   Trash2,
-  PlusCircle,
+  // PlusCircle,
   Clock,
   CheckCircle2,
   Archive
@@ -17,11 +17,11 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import {
   updateProject,
-  assignTeamToProject,
+  // assignTeamToProject,
   removeTeamFromProject
 } from '../../../redux/projectsSlice';
 import { RootState } from '../../../redux/store';
-import { Project, Team, User } from '../../../types';
+import { Project, Team } from '../../../types';
 
 interface ProjectDetailsProps {
   project: Project;

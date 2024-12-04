@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { AlertCircle, CheckCircle2, Clock, BarChart3, Group } from 'lucide-react';
 import { RootState, Statistics, Task } from '../../types';
 import { User2 } from "lucide-react"
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../redux/store';
 import TaskDetailPopup from '../popups/TaskDetailPopup';
 import { User } from '../../types';
@@ -177,7 +177,7 @@ const GridComponent = () => {
 
 
 const AdminDashboard: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const dispatch = useDispatch();
   const tasks = useSelector((state: RootState) => state.tasks);
   const taskArr: Task[] = (tasks as any).tasks;

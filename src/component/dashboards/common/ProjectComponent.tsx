@@ -13,7 +13,7 @@ import {
     BarChart,
     X
 } from 'lucide-react';
-import { Organisation, Project } from '../../../types';
+import { Project } from '../../../types';
 import ProjectDetailsView from './ProjectDetailsView';
 
 const ProjectsComponent: React.FC = () => {
@@ -26,10 +26,10 @@ const ProjectsComponent: React.FC = () => {
 
     if (!orgs || !userCurrent) return;
 
-    const orgsParsed = JSON.parse(orgs);
+    // const orgsParsed = JSON.parse(orgs);
     const parsedUserCurrent = JSON.parse(userCurrent);
 
-    const organisation = orgsParsed.filter((o: Organisation) => o.id === parsedUserCurrent.id);
+    // const organisation = orgsParsed.filter((o: Organisation) => o.id === parsedUserCurrent.id);
 
     const projects = useAppSelector((state) =>
         state.projects.projects.filter(

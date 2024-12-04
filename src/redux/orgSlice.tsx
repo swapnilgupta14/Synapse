@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Organisation, User } from '../types';
+import { User } from '../types';
 import { RootState } from '../redux/store';
 
 interface OrganisationState {
