@@ -36,13 +36,16 @@ export const AuthUI: React.FC<AuthUIProps> = ({
 }) => {
     const navigate = useNavigate();
 
+    const handleNavigateToLogin = () => navigate('/auth?mode=login');
+    const handleNavigateToOrgLogin = () => navigate('/auth?mode=login&role=organisation');
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
             <div className="bg-white px-12 py-6 rounded-xl shadow-lg w-full max-w-md">
                 <h2 className="text-3xl font-bold mb-2 text-center">
                     {isOrganisation
                         ? (isSignup ? 'Create Organization' : 'Welcome Organization')
-                        : (isSignup ? 'Create Account' : 'Welcome Back')}
+                        : (isSignup ? 'Create Account' : 'Welcome Back! User')}
                 </h2>
                 <p className="text-center text-gray-600 mb-8">
                     {isSignup
@@ -53,16 +56,16 @@ export const AuthUI: React.FC<AuthUIProps> = ({
 
                     {!isOrganisation ? (
                         <span className='font-medium cursor-pointer hover:underline text-black'
-                            onClick={() => navigate('/auth?mode=login&role=organisation')}
+                            onClick={handleNavigateToOrgLogin}
                         >{" "}Are you an Organisation?</span>
                     ) : <span className='font-medium cursor-pointer hover:underline text-black'
-                        onClick={() => navigate('/auth?mode=login')}
+                        onClick={handleNavigateToLogin}
                     >{" "}Are you an User?</span>}
 
                 </p>
 
                 <form onSubmit={isSignup ? onSignup : onLogin} className="space-y-6">
-                    <div className="relative">
+                    {isSignup && <div className="relative">
                         <label htmlFor="email" className="sr-only">
                             Email
                         </label>
@@ -78,11 +81,11 @@ export const AuthUI: React.FC<AuthUIProps> = ({
                             className="w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                             required={isSignup}
                         />
-                    </div>
+                    </div>}
 
                     <div className="relative">
                         <label htmlFor="username" className="sr-only">
-                            {isOrganisation ? 'Username/ Organization Name' : 'Username/ Organization Name'}
+                            {isOrganisation ? 'Organization Name' : 'Username'}
                         </label>
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <UserIcon size={20} className="text-gray-400" />
@@ -90,7 +93,7 @@ export const AuthUI: React.FC<AuthUIProps> = ({
                         <input
                             type="text"
                             id="username"
-                            placeholder={isOrganisation ? 'Username/ Organization Name' : 'Username/ Organization Name'}
+                            placeholder={isOrganisation ? 'Organization Name' : 'Username'}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"

@@ -1,189 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Outlet } from 'react-router-dom';
 
-import { generateTaskStatistics, archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../redux/taskSlice';
+import { archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../../redux/taskSlice';
 
-import { Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { AlertCircle, CheckCircle2, Clock, BarChart3, Group } from 'lucide-react';
-import { RootState, Statistics, Task } from '../../types';
-import { User2 } from "lucide-react"
-import { useAppSelector } from '../../redux/store';
-import TaskDetailPopup from '../popups/TaskDetailPopup';
-import { User } from '../../types';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../component/ui/Card';
+import { RootState, Task } from '../../../types';
+import { useAppSelector } from '../../../redux/store';
+import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
+import { User } from '../../../types';
 import { Trash2, Archive, Users, AlertTriangle, X } from 'lucide-react';
 
-import { logout } from '../../redux/authSlice';
-
-const GridComponent = () => {
-  const statistics: Statistics = useSelector((state: RootState) => (state.tasks as any).statistics);
-  const tasks = useSelector((state: RootState) => state.tasks);
-  const taskArr: Task[] = (tasks as any).tasks;
-
-  const getPriorityDistribution = () => ({
-    high: taskArr.filter((task: Task) => task.priority === 'high').length,
-    medium: taskArr.filter((task: Task) => task.priority === 'medium').length,
-    low: taskArr.filter((task: Task) => task.priority === 'low').length
-  });
-
-  const priorityData = getPriorityDistribution();
-
-  const [memberCount, setMemberCount] = useState({
-    team_member: 0,
-    team_manager: 0
-  })
-
-  useEffect(() => {
-    const res = localStorage.getItem("SignedUpUsers");
-    if (res) {
-      const p = JSON.parse(res);
-      const managers = p.filter((i: User) => i.role === "Team Manager").length;
-      const members = p.filter((i: User) => i.role === "Team Member").length;
-      setMemberCount({
-        team_member: members,
-        team_manager: managers
-      })
-    }
-  }, [tasks])
-
-
-  return (
-    <div className="w-full h-[100vh]">
-      <div className="grid grid-cols-5 grid-rows-[repeat(3,_1fr)] gap-4 h-[50%]">
-        <div className="bg-white rounded-lg p-2">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium text-start">Total Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BarChart3 className="h-4 w-4 text-gray-500" />
-              <div className="text-2xl font-bold">{statistics?.totalTasks}</div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="bg-white rounded-lg p-2">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Completed Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-              <div className="text-2xl font-bold text-green-600">
-                {statistics?.completedTasks}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="bg-white rounded-lg p-2">    <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-md font-medium">Pending Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className='flex w-full h-full justify-evenly items-center'>
-              <Clock className="h-4 w-4 text-yellow-500" />
-              <div className="text-2xl font-bold text-yellow-600">
-                {statistics?.pendingTasks || 0}
-              </div>
-            </div>
-          </CardContent>
-        </Card></div>
-        <div className="bg-white rounded-lg p-4 row-span-2 col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Priority Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 ">
-                <div className="flex items-center">
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-red-500 h-4 rounded-full"
-                      style={{ width: `${(priorityData.high / statistics?.totalTasks) * 100}%` }}
-                    />
-                  </div>
-                  <span className="ml-2 text-sm">High ({priorityData.high})</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-yellow-500 h-4 rounded-full"
-                      style={{ width: `${(priorityData.medium / statistics?.totalTasks) * 100}%` }}
-                    />
-                  </div>
-                  <span className="ml-2 text-sm">Medium ({priorityData.medium})</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-green-500 h-4 rounded-full"
-                      style={{ width: `${(priorityData.low / statistics?.totalTasks) * 100}%` }}
-                    />
-                  </div>
-                  <span className="ml-2 text-sm">Low ({priorityData.low})</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="bg-white rounded-lg p-2">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Overdue Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AlertCircle className="h-4 w-4 text-blue-500" />
-              <div className="text-2xl font-bold text-blue-600">
-                {statistics?.overdueTasksCount || 0}
-              </div>
-            </CardContent>
-          </Card>
-
-        </div>
-        <div className="bg-white rounded-lg p-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Team Managers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Group className="h-4 w-4 text-red-500" />
-              <div className="text-2xl font-bold text-red-600">
-                {memberCount?.team_manager}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="bg-white rounded-lg p-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Team Members</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <User2 className="h-4 w-4 text-orange-500" />
-              <div className="text-2xl font-bold text-orange-600">
-                {memberCount?.team_member}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 col-span-5">Box 8</div>
-      </div>
-    </div>
-
-  )
-}
+import { logout } from '../../../redux/authSlice';
 
 
 const AdminDashboard: React.FC = () => {
-  // const navigate = useNavigate();
   const dispatch = useDispatch();
   const tasks = useSelector((state: RootState) => state.tasks);
   const taskArr: Task[] = (tasks as any).tasks;
   const { user } = useAppSelector(state => state.auth);
-
-  // const [profile, openProfile] = useState(false);
-  // const currentDate = new Date();
 
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
@@ -377,46 +212,12 @@ const AdminDashboard: React.FC = () => {
     setShowBulkActions(false);
   };
 
-  const getCompletionTrendData = () => {
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    }).reverse();
-
-    return last7Days.map(date => ({
-      date,
-      completed: taskArr.filter((task: Task) =>
-        task.status === 'completed' &&
-        task.completedAt?.split('T')[0] === date
-      ).length,
-      created: taskArr.filter((task: Task) =>
-        task.createdAt.split('T')[0] === date
-      ).length
-    }));
-  };
-
-
-  useEffect(() => {
-    dispatch(generateTaskStatistics());
-  }, [dispatch, taskArr]);
-
-
-  const getPriorityDistribution = () => ({
-    high: taskArr.filter((task: Task) => task.priority === 'high').length,
-    medium: taskArr.filter((task: Task) => task.priority === 'medium').length,
-    low: taskArr.filter((task: Task) => task.priority === 'low').length
-  });
-
-  const priorityData = getPriorityDistribution();
-  console.log(priorityData);
-
   return (
     <div className='w-full h-screen flex flex-col gap-4 px-6'>
       <header className="flex w-full justify-between items-center py-4 pb-0 my-2">
         <div>
           <p className="text-xl font-medium text-gray-800">
-            Welcome, <span className="text-black font-bold">{user?.username}</span>!
+            Welcome, <span className="text-black font-bold capitalize">{user?.username}</span>!
           </p>
           <p className="text-sm text-gray-500">Here’s what’s on your plate today</p>
         </div>
@@ -563,7 +364,7 @@ const AdminDashboard: React.FC = () => {
       </Card>
 
 
-      <div className="h-[50vh] w-full flex gap-4">
+      {/* <div className="h-[50vh] w-full flex gap-4">
         <div className="flex-1 h-full flex">
           <GridComponent />
         </div>
@@ -585,7 +386,7 @@ const AdminDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </div> */}
 
       <BulkActionsDialog />
       <ArchiveDialog />
@@ -599,6 +400,8 @@ const AdminDashboard: React.FC = () => {
         }}
         taskId={selectedTaskId}
       />
+
+      <Outlet />
     </div>
   );
 };

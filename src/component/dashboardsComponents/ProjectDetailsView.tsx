@@ -19,9 +19,9 @@ import {
   updateProject,
   // assignTeamToProject,
   removeTeamFromProject
-} from '../../../redux/projectsSlice';
-import { RootState } from '../../../redux/store';
-import { Project, Team } from '../../../types';
+} from '../../redux/projectsSlice';
+import { RootState } from '../../redux/store';
+import { Project, Team } from '../../types';
 
 interface ProjectDetailsProps {
   project: Project;

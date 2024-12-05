@@ -87,14 +87,14 @@ const Auth: React.FC = () => {
                 localStorage.setItem('SignedUpUsers', JSON.stringify(updatedUsers));
             }
 
-            const userForState: User = {
+            const userForState: Omit<User, "email"> = {
                 id: isOrgLogin
                     ? (userOrOrg as Organisation).organisationId
                     : (userOrOrg as User).id,
                 username: username,
-                email: isOrgLogin
-                    ? (userOrOrg as Organisation).email
-                    : (userOrOrg as User).email,
+                // email: isOrgLogin
+                //     ? (userOrOrg as Organisation).email
+                //     : (userOrOrg as User).email,
                 role: isOrgLogin ? 'Organisation' : (userOrOrg as User).role,
                 token: newToken,
                 createdAt: isOrgLogin

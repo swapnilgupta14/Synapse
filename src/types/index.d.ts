@@ -15,6 +15,13 @@ export interface User {
   teamId?: number[];
 }
 
+export type RoleType =
+  | "Admin"
+  | "Organisation"
+  | "Project Manager"
+  | "Team Manager"
+  | "Team Member";
+
 export interface Organisation extends User {
   organisationId: number;
   description?: string;
@@ -30,6 +37,7 @@ export interface Project {
   organisationId: number;
   projectManagerId: number;
   teams: Team[];
+  // teams: number[];
   createdAt: string;
   status: "active" | "archived" | "planning";
   startDate?: string;
@@ -105,11 +113,11 @@ export interface AddProjectPayload {
   endDate?: string;
 }
 
-export interface AddTeamPayload {   
-  name: string;   
-  projectId: number;   
-  teamManagerId: number;   
-  description?: string;   
+export interface AddTeamPayload {
+  name: string;
+  projectId: number;
+  teamManagerId: number;
+  description?: string;
   teamId?: number;
 }
 

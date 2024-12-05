@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Plus, X } from 'lucide-react';
-import { addTeam, updateTeam } from '../../../redux/teamsSlice';
-import { RootState } from '../../../redux/store';
-import { Team } from '../../../types';
+import { addTeam, updateTeam } from '../../redux/teamsSlice';
+import { RootState } from '../../redux/store';
+import { Team } from '../../types';
 
 interface AddTeamsComponentProps {
     isEditing?: boolean;

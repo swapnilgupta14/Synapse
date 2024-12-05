@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../redux/store";
-import { logout } from "../../redux/authSlice";
+import { useAppSelector, useAppDispatch } from "../../../redux/store";
+import { logout } from "../../../redux/authSlice";
 import { LogOut, Users, Trash2, Edit, Plus } from "lucide-react";
-import { Project, Team } from "../../types";
-import { deleteTeam } from "../../redux/teamsSlice";
+import { Project, Team } from "../../../types";
+import { deleteTeam } from "../../../redux/teamsSlice";
 
-import AddMembersComponent from "./common/AddMemberComponent";
-import ProjectsComponent from "./common/ProjectComponent";
-import AddTeamsComponent from "./common/AddTeamsComponent";
-import MembersPopup from "../popups/MemberPopup";
-import AddTeamMembersModal from "../popups/AddTeamMembersModal";
+import AddMembersComponent from "../../../component/dashboardsComponents/AddMemberComponent";
+import ProjectsComponent from "../../../component/dashboardsComponents/ProjectComponent";
+import AddTeamsComponent from "../../../component/dashboardsComponents/AddTeamsComponent";
+import MembersPopup from "../../../component/popups/MemberPopup";
+import AddTeamMembersModal from "../../../component/popups/AddTeamMembersModal";
 
 const OrganisationDashboard: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -46,8 +46,8 @@ const OrganisationDashboard: React.FC = () => {
 
   const allProjects = useAppSelector(state => state.projects.projects);
 
-  const handleGetName = (id : number) => {
-    const filtered = allProjects.find((it : Project) => it.projectId === id);
+  const handleGetName = (id: number) => {
+    const filtered = allProjects.find((it: Project) => it.projectId === id);
     return filtered?.name;
   }
 

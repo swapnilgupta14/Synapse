@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useAppSelector, useAppDispatch } from "../../../redux/store";
+import { useAppSelector, useAppDispatch } from "../../redux/store";
 import {
     addProject,
     deleteProject
-} from "../../../redux/projectsSlice";
+} from "../../redux/projectsSlice";
 import {
     Folder,
     Plus,
@@ -13,7 +13,7 @@ import {
     BarChart,
     X
 } from 'lucide-react';
-import { Project } from '../../../types';
+import { Project } from '../../types';
 import ProjectDetailsView from './ProjectDetailsView';
 
 const ProjectsComponent: React.FC = () => {

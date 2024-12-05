@@ -10,14 +10,14 @@ import {
   CheckSquare,
   Square,
 } from "lucide-react";
-import { User } from "../../../types";
-import { useAppDispatch } from "../../../redux/store";
+import { User } from "../../types";
+import { useAppDispatch } from "../../redux/store";
 import {
   addMembersToOrg,
   loadMembers,
   removeMemberFromOrg,
-} from "../../../redux/orgSlice";
-import { useAppSelector } from "../../../redux/store";
+} from "../../redux/orgSlice";
+import { useAppSelector } from "../../redux/store";
 
 interface AddMembersComponentProps {
   onAddMembers?: (users: User[]) => void;

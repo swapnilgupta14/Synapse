@@ -1,40 +1,63 @@
 
 ```
-Folder
-├─ .gitignore
-├─ eslint.config.js
-├─ index.html
-├─ package-lock.json
-├─ package.json
+Deployed
 ├─ public
+│  └─ image.png
 ├─ README.md
 ├─ server
-│  ├─ auth.json
-│  ├─ json-server.json
-│  ├─ routes.json
-│  └─ task.json
+│  └─ db.json
 ├─ src
 │  ├─ App.tsx
 │  ├─ component
-│  │  ├─ Auth.tsx
-│  │  ├─ Card.tsx
-│  │  ├─ ProfilePopup.tsx
-│  │  ├─ ProtectedRoute.tsx
-│  │  ├─ Signup.tsx
-│  │  └─ TaskDetailPopup.tsx
+│  │  ├─ dashboardsComponents
+│  │  │  ├─ AddMemberComponent.tsx
+│  │  │  ├─ AddTeamsComponent.tsx
+│  │  │  ├─ ProjectComponent.tsx
+│  │  │  ├─ ProjectDetailsView.tsx
+│  │  │  └─ Sidebar.tsx
+│  │  ├─ popups
+│  │  │  ├─ AddTaskPopup.tsx
+│  │  │  ├─ AddTeamMembersModal.tsx
+│  │  │  ├─ AdminOnly
+│  │  │  ├─ MemberPopup.tsx
+│  │  │  ├─ ProfilePopup.tsx
+│  │  │  └─ TaskDetailPopup.tsx
+│  │  └─ ui
+│  │     └─ Card.tsx
+│  ├─ LandingPage.tsx
 │  ├─ main.tsx
 │  ├─ pages
-│  │  ├─ AdminDashboard.tsx
-│  │  ├─ Dashboard.tsx
-│  │  └─ UserDashboard.tsx
+│  │  ├─ auth.tsx
+│  │  ├─ authUI.tsx
+│  │  ├─ dashboard.tsx
+│  │  └─ dashboards
+│  │     ├─ AdminDashboard
+│  │     │  ├─ allProjects.tsx
+│  │     │  ├─ allTasks.tsx
+│  │     │  ├─ allTeams.tsx
+│  │     │  ├─ allUsers.tsx
+│  │     │  ├─ analytics.tsx
+│  │     │  └─ index.tsx
+│  │     ├─ OrganisationDashboard
+│  │     │  └─ index.tsx
+│  │     └─ UserDashboard
+│  │        └─ index.tsx
+│  ├─ ProtectedRoute.tsx
 │  ├─ redux
 │  │  ├─ authSlice.tsx
+│  │  ├─ orgSlice.tsx
+│  │  ├─ projectsSlice.tsx
 │  │  ├─ store.tsx
-│  │  └─ taskSlice.tsx
+│  │  ├─ taskSlice.tsx
+│  │  ├─ teamsSlice.tsx
+│  │  └─ userSlice.tsx
 │  ├─ styles
 │  │  └─ index.css
 │  ├─ types
 │  │  └─ index.d.ts
+│  ├─ utils
+│  │  ├─ generateToken.tsx
+│  │  └─ localStorage.tsx
 │  └─ vite-env.d.ts
 ├─ tailwind.config.js
 ├─ tsconfig.app.json

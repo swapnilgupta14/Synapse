@@ -29,7 +29,7 @@ const TaskDetailPopup = ({ isPopupOpen, onClose, taskId }: PropTypes) => {
   if (!task) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
         <div className="flex justify-between items-center p-6 bg-gray-50">
           <div className="flex items-center gap-2">

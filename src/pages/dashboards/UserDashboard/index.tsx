@@ -1,17 +1,17 @@
 import { useState, useMemo } from 'react';
 import { Calendar, Search, Grid, List, Plus, Clock, Tag, Flag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ClipboardList, LogOut } from "lucide-react"
-import ProfilePopup from '../popups/ProfilePopup';
+import ProfilePopup from '../../../component/popups/ProfilePopup';
 
-import { useAppSelector, useAppDispatch } from '../../redux/store';
+import { useAppSelector, useAppDispatch } from '../../../redux/store';
 import {
     addTask,
     deleteTask,
     toggleTaskStatus,
-} from '../../redux/taskSlice';
-import { Task, Team, User } from '../../types';
+} from '../../../redux/taskSlice';
+import { Task, Team, User } from '../../../types';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../redux/authSlice';
+import { logout } from '../../../redux/authSlice';
 
 type selectedMember = User | null;
 
@@ -29,13 +29,6 @@ const UserDashboard = () => {
             return storedUser ? storedUser : null;
         }
     }, []);
-
-    // const teamMembers = useMemo(() => {
-    //     const users = localStorage.getItem('SignedUpUsers');
-    //     return users
-    //         ? JSON.parse(users).filter((item: User) => item.role === 'Team Member')
-    //         : [];
-    // }, []);
 
     const workTeam = useMemo(() => {
         if (!currentUser) return [];
@@ -71,7 +64,7 @@ const UserDashboard = () => {
         if (currentUser.role === 'Team Member') {
             tasksToFilter = tasks.filter((item) => item.assignedTo == currentUser.id);
         } else if (currentUser.role === 'Team Manager') {
-            tasksToFilter = tasks;
+            tasksToFilter = tasks.filter((item) => item?.createdBy === currentUser.id);
         } else {
             tasksToFilter = tasks;
         }

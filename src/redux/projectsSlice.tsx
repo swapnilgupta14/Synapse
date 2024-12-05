@@ -119,7 +119,7 @@ const projectsSlice = createSlice({
 
         saveToLocalStorage('projects', state.projects);
       }
-    );
+      );
   }
 });
 
