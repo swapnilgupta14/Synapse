@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { saveToLocalStorage, loadFromLocalStorage } from '../utils/localStorage';
-import { Team, User, AddTeamPayload, TeamsState } from '../types';
+import { saveToLocalStorage, loadFromLocalStorage } from '../../utils/localStorage';
+import { Team, User, AddTeamPayload, TeamsState, Project } from '../../types';
 
 const initialTeamsState: TeamsState = {
     teams: loadFromLocalStorage('teams', []),
@@ -31,7 +31,7 @@ const teamsSlice = createSlice({
                 saveToLocalStorage('teams', state.teams);
             }
         },
-        
+
         deleteTeam: (state, action: PayloadAction<number>) => {
             const teamIdToDelete = action.payload;
 
@@ -40,16 +40,22 @@ const teamsSlice = createSlice({
             const signedUpUsers: User[] = JSON.parse(
                 localStorage.getItem("SignedUpUsers") || "[]"
             );
+            const projects: Project[] = loadFromLocalStorage("projects", []);
 
             const updatedSignedUpUsers = signedUpUsers.map(user => {
                 if (user.role === 'Admin' || !user.teamId) return user;
-
                 return {
                     ...user,
                     teamId: user.teamId.filter(id => id !== teamIdToDelete)
                 };
             });
 
+            const updatedProjects = projects.map(project => ({
+                ...project,
+                teams: project.teams.filter(teamId => teamId !== teamIdToDelete)
+            }));
+
+            localStorage.setItem("projects", JSON.stringify(updatedProjects));
             localStorage.setItem("SignedUpUsers", JSON.stringify(updatedSignedUpUsers));
             saveToLocalStorage('teams', state.teams);
         },

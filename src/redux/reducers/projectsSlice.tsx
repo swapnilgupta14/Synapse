@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { addTeam, updateTeam } from './teamsSlice';
-import { Project, Team, AddProjectPayload, ProjectsState } from '../types';
-import { saveToLocalStorage, loadFromLocalStorage } from '../utils/localStorage';
+import { Project, Team, AddProjectPayload, ProjectsState } from '../../types';
+import { saveToLocalStorage, loadFromLocalStorage } from '../../utils/localStorage';
 
 const initialProjectsState: ProjectsState = {
   projects: loadFromLocalStorage('projects', []),
@@ -43,8 +43,8 @@ const projectsSlice = createSlice({
       const projectIndex = state.projects.findIndex(p => p.projectId === action.payload.projectId);
       if (projectIndex !== -1) {
         const project = state.projects[projectIndex];
-        if (!project.teams.some(team => team.teamId === action.payload.team.teamId)) {
-          project.teams.push(action.payload.team);
+        if (!project.teams.some(item => item === action.payload.team.teamId)) {
+          project.teams.push(action.payload.team.teamId);
           saveToLocalStorage('projects', state.projects);
         }
       }
@@ -54,7 +54,7 @@ const projectsSlice = createSlice({
       const projectIndex = state.projects.findIndex(p => p.projectId === action.payload.projectId);
       if (projectIndex !== -1) {
         state.projects[projectIndex].teams = state.projects[projectIndex].teams
-          .filter(team => team.teamId !== action.payload.teamId);
+          .filter(item => item !== action.payload.teamId);
         saveToLocalStorage('projects', state.projects);
       }
     }
@@ -66,28 +66,18 @@ const projectsSlice = createSlice({
         if (action.payload.projectId) {
           const projectIndex = state.projects.findIndex(p => p.projectId === action.payload.projectId);
           if (projectIndex !== -1) {
-            const newTeam: Team = {
-              teamId: action.payload.teamId || Date.now(),
-              name: action.payload.name,
-              projectId: action.payload.projectId,
-              createdAt: new Date().toISOString(),
-              members: [],
-              teamManagerId: action.payload.teamManagerId || 0,
-              description: action.payload.description || ''
-            };
 
+            const teamId: number = action.payload.teamId || Date.now();
             const project = state.projects[projectIndex];
-            if (!project.teams.some(team => team.teamId === newTeam.teamId)) {
-              project.teams.push(newTeam);
-              saveToLocalStorage('projects', state.projects);
-            }
+            project.teams.push(teamId);
+            saveToLocalStorage('projects', state.projects);
           }
         }
       })
       .addCase(updateTeam, (state, action) => {
         state.projects.forEach(project => {
           project.teams = project.teams.filter(
-            team => team.teamId !== action.payload.teamId
+            item => item !== action.payload.teamId
           );
         });
 
@@ -97,22 +87,23 @@ const projectsSlice = createSlice({
           );
 
           if (targetProjectIndex !== -1) {
-            const updatedTeam: Team = {
-              teamId: action.payload.teamId,
-              name: action.payload.name || "",
-              projectId: action.payload.projectId,
-              createdAt: new Date().toISOString(),
-              members: [],
-              teamManagerId: action.payload.teamManagerId || 0,
-              description: action.payload.description || ''
-            };
+            // const updatedTeam: Team = {
+            //   teamId: action.payload.teamId,
+            //   name: action.payload.name || "",
+            //   projectId: action.payload.projectId,
+            //   createdAt: new Date().toISOString(),
+            //   members: [],
+            //   teamManagerId: action.payload.teamManagerId || 0,
+            //   description: action.payload.description || ''
+            // };
+            const teamId = action.payload.teamId;
 
             const existingTeamIndex = state.projects[targetProjectIndex].teams.findIndex(
-              team => team.teamId === action.payload.teamId
+              item => item === action.payload.teamId
             );
 
             if (existingTeamIndex === -1) {
-              state.projects[targetProjectIndex].teams.push(updatedTeam);
+              state.projects[targetProjectIndex].teams.push(teamId);
             }
           }
         }

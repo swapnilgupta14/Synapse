@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from '../../redux/store';
 import { Organisation, User } from '../../types';
 // import { updateUserTeam } from '../../redux/userSlice';
 import { Plus, Search, X } from 'lucide-react';
-import { updateTeam } from '../../redux/teamsSlice';
+import { updateTeam } from '../../redux/reducers/teamsSlice';
 
 const AddTeamMembersModal: React.FC<{
     teamId: number;
@@ -19,13 +19,13 @@ const AddTeamMembersModal: React.FC<{
         state.teams.teams.find(team => team.teamId === teamId)
     );
 
-    const currentOrg : Organisation = JSON.parse(localStorage.getItem('userCurrent') || '[]');
+    const currentOrg: Organisation = JSON.parse(localStorage.getItem('userCurrent') || '[]');
 
     const users = localStorage.getItem('SignedUpUsers');
     if (!users) return null;
     const availableUsers = JSON.parse(users).filter((it: User) => it?.role !== 'Admin');
 
-    const filteredUsers_1 : User[] = useMemo(() => {
+    const filteredUsers_1: User[] = useMemo(() => {
         const alreadyAddedIds = currentTeam?.members.map(member => member.id) || [];
         return availableUsers
             .filter((user: User) =>
@@ -56,7 +56,7 @@ const AddTeamMembersModal: React.FC<{
         });
 
         localStorage.setItem("SignedUpUsers", JSON.stringify(updatedUsers));
-        dispatch(updateTeam({ teamId, projectId: currentTeam?.projectId, members: updatedMembers, name: currentTeam?.name}));
+        dispatch(updateTeam({ teamId, projectId: currentTeam?.projectId, members: updatedMembers, name: currentTeam?.name }));
         setSelectedMembers((prev) => [...prev, newMember]);
     };
 
@@ -155,8 +155,12 @@ const AddTeamMembersModal: React.FC<{
                     <h2 className="text-xl font-semibold">
                         Add Members to {currentTeam?.name}
                     </h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                        <X size={24} />
+                    <button
+                        onClick={onClose}
+                        aria-label="Close"
+                        className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500 hover:text-gray-700"
+                    >
+                        <X size={20} />
                     </button>
                 </div>
 

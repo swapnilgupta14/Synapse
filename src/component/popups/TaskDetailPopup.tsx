@@ -13,20 +13,18 @@ import {
 import { RootState, Task } from '../../types';
 
 type PropTypes = {
-  isPopupOpen: Boolean,
+  isPopupOpen?: Boolean,
   onClose: () => void;
   taskId: number
 }
 
-const TaskDetailPopup = ({ isPopupOpen, onClose, taskId }: PropTypes) => {
+const TaskDetailPopup = ({ onClose, taskId }: PropTypes) => {
   if (taskId === 0) return;
-  if (!isPopupOpen) return null;
-
   const tasks = useSelector((state: RootState) => state.tasks);
   const taskArr: Task[] = (tasks as any).tasks;
   const task = taskArr.find(t => t.taskId === taskId);
 
-  if (!task) return null;
+  if(!task) return;
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">

@@ -4,7 +4,8 @@ import {
     Lock,
     User as UserIcon,
     Mail,
-    ArrowRight
+    ArrowRight,
+    ArrowLeft
 } from 'lucide-react';
 
 interface AuthUIProps {
@@ -38,9 +39,17 @@ export const AuthUI: React.FC<AuthUIProps> = ({
 
     const handleNavigateToLogin = () => navigate('/auth?mode=login');
     const handleNavigateToOrgLogin = () => navigate('/auth?mode=login&role=organisation');
+    const handleNavigateToHome = () => navigate("/");
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 relative">
+
+            <div className='absolute top-4 left-4 flex gap-2 items-center justify-center cursor-pointer bg-blue-100 text-blue-700 py-1 px-2 hover:text-white hover:bg-black transition-all duration-300 rounded-3xl'
+            onClick={handleNavigateToHome}
+            >
+                <ArrowLeft className='w-4 h-4' />Back
+            </div>
+
             <div className="bg-white px-12 py-6 rounded-xl shadow-lg w-full max-w-md">
                 <h2 className="text-3xl font-bold mb-2 text-center">
                     {isOrganisation

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useAppSelector } from '../../../redux/store';
-import { generateTaskStatistics } from '../../../redux/taskSlice';
+import { generateTaskStatistics } from '../../../redux/reducers/taskSlice';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   PieChart, Pie, Cell, ResponsiveContainer
@@ -13,9 +13,9 @@ import {
   UserPlus,
   UserX,
   Crown,
-  CheckCircle2, 
-  Clock, 
-  ListTodo 
+  CheckCircle2,
+  Clock,
+  ListTodo
 } from 'lucide-react';
 import { Task, User } from '../../../types';
 
@@ -37,44 +37,48 @@ const InfoCard: React.FC<InfoCardProps> = ({ icon, label, value }): JSX.Element 
 
 const Analytics = () => {
   const dispatch = useDispatch();
-  const statistics = useAppSelector((state) => (state.tasks as any).statistics);
+  // const statistics = useAppSelector((state) => (state.tasks as any)?.statistics || {});
   const tasks = useAppSelector((state) => state.tasks);
-  const taskArr = (tasks as any).tasks;
+  const taskArr = (tasks as any)?.tasks || [];
 
   const [memberCount, setMemberCount] = useState({
     team_member: 0,
-    team_manager: 0
+    team_manager: 0,
   });
 
   useEffect(() => {
     const res = localStorage.getItem("SignedUpUsers");
     if (res) {
-      const p = JSON.parse(res);
-      const managers = p.filter((i: User) => i.role === "Team Manager").length;
-      const members = p.filter((i: User) => i.role === "Team Member").length;
-      setMemberCount({
-        team_member: members,
-        team_manager: managers
-      });
+      try {
+        const parsedUsers = JSON.parse(res) || [];
+        const managers = parsedUsers.filter((user: User) => user.role === "Team Manager").length;
+        const members = parsedUsers.filter((user: User) => user.role === "Team Member").length;
+        setMemberCount({
+          team_member: members,
+          team_manager: managers,
+        });
+      } catch (error) {
+        console.error("Error parsing SignedUpUsers from localStorage:", error);
+      }
     }
-  }, [tasks]);
+  }, []);
 
   const getCompletionTrendData = () => {
+    if (!Array.isArray(taskArr)) return [];
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
       return date.toISOString().split('T')[0];
     }).reverse();
 
-    return last7Days.map(date => ({
+    return last7Days.map((date) => ({
       date,
-      completed: taskArr.filter((task: Task) =>
-        task.status === 'completed' &&
-        task.completedAt?.split('T')[0] === date
+      completed: taskArr.filter(
+        (task: Task) => task.status === 'completed' && task.completedAt?.split('T')[0] === date
       ).length,
-      created: taskArr.filter((task: Task) =>
-        task.createdAt.split('T')[0] === date
-      ).length
+      created: taskArr.filter(
+        (task: Task) => task.createdAt?.split('T')[0] === date
+      ).length,
     }));
   };
 
@@ -85,7 +89,7 @@ const Analytics = () => {
   const getPriorityDistribution = () => ({
     high: taskArr.filter((task: Task) => task.priority === 'high').length,
     medium: taskArr.filter((task: Task) => task.priority === 'medium').length,
-    low: taskArr.filter((task: Task) => task.priority === 'low').length
+    low: taskArr.filter((task: Task) => task.priority === 'low').length,
   });
 
   const priorityData = getPriorityDistribution();
@@ -96,7 +100,7 @@ const Analytics = () => {
   const priorityPieData = [
     { name: 'High', value: priorityData.high },
     { name: 'Medium', value: priorityData.medium },
-    { name: 'Low', value: priorityData.low }
+    { name: 'Low', value: priorityData.low },
   ];
 
   const completedTasksCount = taskArr.filter((task: Task) => task.status === 'completed').length;
@@ -106,7 +110,6 @@ const Analytics = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="container mx-auto">
         <h1 className="text-xl font-semibold text-black mb-6">Analytics Page</h1>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           <div className="bg-white shadow-md rounded-lg p-6">
@@ -137,7 +140,7 @@ const Analytics = () => {
               <InfoCard
                 icon={<UserPlus className="w-5 h-5" />}
                 label="Members in Teams"
-                value={2}
+                value={memberCount.team_member}
               />
 
               <InfoCard
@@ -149,7 +152,7 @@ const Analytics = () => {
               <InfoCard
                 icon={<Crown className="w-5 h-5" />}
                 label="Team Managers"
-                value={1}
+                value={memberCount.team_manager}
               />
             </div>
           </div>

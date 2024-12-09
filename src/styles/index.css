@@ -14,3 +14,16 @@ body, html{
     background-color: rgb(234, 234, 234);
     font-family: "League Spartan", sans-serif;
 }
+
+.truncate-cell {
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+  }
+  
+  .truncate-cell:hover {
+    cursor: pointer;
+  }
+  

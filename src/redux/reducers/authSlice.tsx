@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User, AuthState } from '../types';
-import { loadFromLocalStorage } from "../utils/localStorage";
+import { User, AuthState } from '../../types';
+import { loadFromLocalStorage } from "../../utils/localStorage";
 const savedToken = localStorage.getItem('token');
 
 const initialState: AuthState = {

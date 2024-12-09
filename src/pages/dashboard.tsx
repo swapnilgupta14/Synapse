@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
                     navigate('/dashboard/admin/tasks', { replace: true });
                     break;
                 case 'Organisation':
-                    navigate('/dashboard/organisation', { replace: true });
+                    navigate('/dashboard/organisation/createProject', { replace: true });
                     break;
                 default:
                     navigate('/dashboard/user', { replace: true });
@@ -33,7 +33,7 @@ const Dashboard: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-200 flex w-full">
+        <div className="min-h-screen bg-gray-100 flex w-full">
             <Sidebar />
             <div className="ml-[4%] flex-1 overflow-x-hidden">
                 <Outlet />

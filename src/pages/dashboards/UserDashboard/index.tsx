@@ -1,17 +1,22 @@
-import { useState, useMemo } from 'react';
-import { Calendar, Search, Grid, List, Plus, Clock, Tag, Flag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Calendar, Search, Grid, List, Plus, Clock, Tag, Flag, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { ClipboardList, LogOut } from "lucide-react"
 import ProfilePopup from '../../../component/popups/ProfilePopup';
+import TeamCard from '../../../component/ui/TeamCard';
 
 import { useAppSelector, useAppDispatch } from '../../../redux/store';
 import {
     addTask,
     deleteTask,
     toggleTaskStatus,
-} from '../../../redux/taskSlice';
+} from '../../../redux/reducers/taskSlice';
 import { Task, Team, User } from '../../../types';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../../redux/authSlice';
+import { logout } from '../../../redux/reducers/authSlice';
+import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
+import StatCard from '../../../component/ui/StatCard';
+import TeamDetailsPopup from '../../../component/popups/TeamDetailPopup';
+import { loadFromLocalStorage } from '../../../utils/localStorage';
 
 type selectedMember = User | null;
 
@@ -20,6 +25,24 @@ const UserDashboard = () => {
     const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const { tasks } = useAppSelector(state => state.tasks);
+
+    const [users, setUsers] = useState<User[]>([]);
+    const [selected, setSelected] = useState<Team | null>(null);
+
+    useEffect(() => {
+        const signedUpUsers = loadFromLocalStorage("SignedUpUsers", []);
+        if (signedUpUsers) {
+            setUsers(signedUpUsers);
+        }
+    }, []);
+
+    const handleTeamClick = (team: Team) => {
+        setSelected(team);
+    };
+
+    const closeModal = () => {
+        setSelected(null);
+    };
 
 
     const currentUser = useMemo(() => {
@@ -57,6 +80,13 @@ const UserDashboard = () => {
     const [searchMemberQuery, setSearchMemberQuery] = useState('');
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [selectedMember, setSelectedMember] = useState<selectedMember>(null);
+
+    const [isPopupOpen, setIsPopupOpen] = useState<Boolean>(false);
+    const [selectedTaskId, setSelectedTaskId] = useState<number>(0);
+
+    // const handleTaskDetailPopup = () => {
+    //     setIsPopupOpen(!isPopupOpen);
+    // }
 
     const filteredTasks = useMemo(() => {
         if (!currentUser) return [];
@@ -290,14 +320,6 @@ const UserDashboard = () => {
                     </button>
 
                     <button
-                        onClick={() => setShowAddTask(!showAddTask)}
-                        className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
-                    >
-                        <Plus size={16} className="text-white" />
-                        Add Task
-                    </button>
-
-                    <button
                         onClick={handleLogout}
                         className="flex items-center justify-center gap-2 bg-red-500 text-white text-sm px-4 py-2 hover:bg-red-600 transition rounded-3xl"
                     >
@@ -307,125 +329,119 @@ const UserDashboard = () => {
                 </div>
             </header>
             <div className='flex flex-col lg:flex-row-reverse items-start justify-between gap-3 p-3'>
-                <div className="w-1/4 space-y-4 h-fit flex flex-col justify-start py-4 px-3 bg-white rounded-2xl">
-                    <p className="text-md flex items-center gap-2 mb-2 bg-gray-200 text-gray-700 py-1 px-3 w-fit rounded-xl">
-                        <ClipboardList className="w-4 h-4 text-gray-700" />
-                        Statistics
-                    </p>
-                    <div className="bg-gray-50 border-gray-200 rounded-xl p-6 border transition-all hover:shadow-md">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Total Tasks</p>
-                                <p className="text-2xl font-semibold text-gray-800 mt-1">{stats.total}</p>
-                                <p className="text-xs text-gray-500 mt-1">All active and completed tasks</p>
-                            </div>
-                            <div className="bg-blue-50/70 p-3 rounded-lg">
-                                <List className="w-6 h-6 text-black" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-50 border-gray-200 rounded-xl shadow p-6 border transition-all hover:shadow-md">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-emerald-600">Completed</p>
-                                <p className="text-2xl font-semibold text-gray-800 mt-1">{stats.completed}</p>
-                                <p className="text-xs text-gray-500 mt-1">Tasks finished this period</p>
-                            </div>
-                            <div className="bg-emerald-50/70 p-3 rounded-lg">
-                                <Tag className="w-6 h-6 text-emerald-500" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-50 border-gray-200 rounded-xl shadow p-6 border  transition-all hover:shadow-md">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-rose-600">High Priority</p>
-                                <p className="text-2xl font-semibold text-gray-800 mt-1">{stats.highPriority}</p>
-                                <p className="text-xs text-gray-500 mt-1">Tasks needing immediate attention</p>
-                            </div>
-                            <div className="bg-rose-50/70 p-3 rounded-lg">
-                                <Flag className="w-6 h-6 text-rose-500" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-50 border-gray-200 rounded-xl shadow p-6 border  transition-all hover:shadow-md">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-amber-600">Due Soon</p>
-                                <p className="text-2xl font-semibold text-gray-800 mt-1">{stats.dueSoon}</p>
-                                <p className="text-xs text-gray-500 mt-1">Tasks due in next 48 hours</p>
-                            </div>
-                            <div className="bg-amber-50/70 p-3 rounded-lg">
-                                <Clock className="w-6 h-6 text-amber-500" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
+                <div className="w-1/4 space-y-4 min-h-screen flex flex-col justify-start py-4 px-3 bg-white rounded-2xl">
 
                     {(user?.role === "Team Manager" && managedTeams.length > 0) ||
                         (user?.role === "Team Member" && workTeam.length > 0) ? (
                         <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
-                            <div className="flex-1 p-4 rounded-xl bg-white w-full">
+                            <div className="flex-1 p-2 rounded-xl bg-white w-full">
                                 <p className="text-md flex items-center gap-2 mb-4 bg-gray-200 text-gray-700 py-1 px-3 w-fit rounded-xl">
                                     <ClipboardList className="w-4 h-4 text-gray-700" />
-                                    {user?.role === "Team Manager" ? `Teams Managed by You (${managedTeams.length})` : `Your Teams Which You are Part Of (${workTeam.length})`}
+                                    {user?.role === "Team Manager" ? `Teams Managed by You (${managedTeams.length})` : `My Teams (${workTeam.length})`}
                                 </p>
 
-                                <div className="bg-transparent rounded-xl mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="bg-transparent rounded-xl mb-4 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
                                     {(user?.role === "Team Manager" ? managedTeams : workTeam).map((team: Team) => (
-                                        <div
-                                            key={team.teamId}
-                                            className="bg-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm 
-                                   h-full flex flex-col justify-between 
-                                   transform transition-all duration-300 
-                                   hover:shadow-lg"
-                                        >
-                                            <div>
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <h2 className="text-lg font-semibold text-gray-800 truncate max-w-[70%]">
-                                                        {team.name}
-                                                    </h2>
-                                                    <span className="text-sm text-gray-500">
-                                                        Team ID: {team.teamId}
-                                                    </span>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-                                                    <div className="text-gray-600">Working on Project ID:</div>
-                                                    <div className="text-right font-medium">{team.projectId}</div>
-
-                                                    <div className="text-gray-600">Total Team Members:</div>
-                                                    <div className="text-right">{team.members.length}</div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <TeamCard key={team.teamId} team={team} handleTeamClick={handleTeamClick} />
                                     ))}
                                 </div>
                             </div>
                         </div>
-                    ) : (
-                        <div className="text-center text-gray-500 p-4 bg-gray-50 rounded-xl w-full">
-                            No teams found
+                    ) : null}
+
+                </div>
+
+
+                <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
+                    <div className='w-full p-4 bg-white rounded-xl'>
+                        <p className="text-md flex items-center gap-2 mb-4 bg-gray-200 text-gray-700 py-1 px-3 w-fit rounded-xl">
+                            <ClipboardList className="w-4 h-4 text-gray-700" />
+                            Statistics
+                        </p>
+
+                        <div className="flex gap-4">
+                            <StatCard
+                                title="Total Tasks"
+                                value={stats.total}
+                                description="All active and completed tasks"
+                                icon={<List className="w-6 h-6 text-black" />}
+                                bgColor="bg-blue-50/70"
+                                textColor="text-gray-600"
+                            />
+                            <StatCard
+                                title="Completed"
+                                value={stats.completed}
+                                description="Tasks finished this period"
+                                icon={<Tag className="w-6 h-6 text-emerald-500" />}
+                                bgColor="bg-emerald-50/70"
+                                textColor="text-emerald-600"
+                            />
+                            <StatCard
+                                title="High Priority"
+                                value={stats.highPriority}
+                                description="Tasks needing immediate attention"
+                                icon={<Flag className="w-6 h-6 text-rose-500" />}
+                                bgColor="bg-rose-50/70"
+                                textColor="text-rose-600"
+                            />
+                            <StatCard
+                                title="Due Soon"
+                                value={stats.dueSoon}
+                                description="Tasks due in next 48 hours"
+                                icon={<Clock className="w-6 h-6 text-amber-500" />}
+                                bgColor="bg-amber-50/70"
+                                textColor="text-amber-600"
+                            />
                         </div>
-                    )}
+                    </div>
 
 
 
                     <div className='flex-1 p-4 rounded-xl bg-white w-full'>
-                        <p className="text-md flex items-center gap-2 mb-4 bg-gray-200 text-gray-700 py-1 px-3 w-fit rounded-xl">
-                            <ClipboardList className="w-4 h-4 text-gray-700" />
-                            Task Manager
-                        </p>
+                        <div className='flex items-center justify-between'>
+
+                            <p className="text-md flex items-center gap-2 mb-4 bg-gray-200 text-gray-700 py-1 px-3 w-fit rounded-xl">
+                                <ClipboardList className="w-4 h-4 text-gray-700" />
+                                Your Tasks
+                            </p>
+                            <div className='flex gap-2 items-center justify-between'>
+
+                                <button
+                                    onClick={() => setShowAddTask(!showAddTask)}
+                                    className=" flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
+                                >
+                                    <Plus size={16} className="text-white" />
+                                    Add Task
+                                </button>
+                            </div>
+                        </div>
 
                         <div className="bg-transparent rounded-xl mb-4">
                             <div className="flex items-center justify-between flex-wrap gap-4">
                                 <div className="flex items-center gap-4 flex-wrap">
+
+
+                                    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                                        <button
+                                            onClick={() => setViewMode('list')}
+                                            className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                                        >
+                                            <List size={20} className="text-gray-700" />
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('grid')}
+                                            className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                                        >
+                                            <Grid size={20} className="text-gray-700" />
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('calendar')}
+                                            className={`p-2 rounded-md transition-colors ${viewMode === 'calendar' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                                        >
+                                            <Calendar size={20} className="text-gray-700" />
+                                        </button>
+                                    </div>
+
                                     <div className="relative">
                                         <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                                         <input
@@ -457,26 +473,7 @@ const UserDashboard = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                                    <button
-                                        onClick={() => setViewMode('list')}
-                                        className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
-                                    >
-                                        <List size={20} className="text-gray-700" />
-                                    </button>
-                                    <button
-                                        onClick={() => setViewMode('grid')}
-                                        className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
-                                    >
-                                        <Grid size={20} className="text-gray-700" />
-                                    </button>
-                                    <button
-                                        onClick={() => setViewMode('calendar')}
-                                        className={`p-2 rounded-md transition-colors ${viewMode === 'calendar' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
-                                    >
-                                        <Calendar size={20} className="text-gray-700" />
-                                    </button>
-                                </div>
+
                             </div>
                         </div>
 
@@ -488,23 +485,35 @@ const UserDashboard = () => {
                                 {filteredTasks.map(task => (
                                     <div
                                         key={task.taskId}
-                                        className="bg-gray-50 border-gray-200 rounded-xl shadow-sm border  p-6 hover:shadow-md transition-shadow"
+
+                                        className="bg-gray-50 hover:bg-zinc-200 border-gray-200 rounded-xl shadow-sm border  p-6 hover:shadow-md transition-shadow"
                                     >
                                         <div className="flex items-start gap-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={task.status === 'completed'}
-                                                onChange={() => handleToggleStatus(task.taskId)}
-                                                className="mt-1 h-4 w-4 rounded border-gray-300 focus:ring-black"
-                                            />
+                                            <div className='h-full flex flex-col justify-between items-center gap-4'>
+
+                                                <input
+                                                    type="checkbox"
+                                                    checked={task.status === 'completed'}
+                                                    onChange={() => handleToggleStatus(task.taskId)}
+                                                    className="mt-1 h-4 w-4 rounded border-gray-300 focus:ring-black"
+                                                />
+
+
+                                            </div>
                                             <div className="flex-grow">
                                                 <h3 className={`text-lg font-medium ${task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-900'}`}>
                                                     {task.title}
                                                 </h3>
-                                                {/* {task.description && (
-                                                <p className="text-gray-600 mt-1">{task.description}</p>
-                                            )} */}
+
                                                 <div className="flex flex-wrap items-center gap-2 mt-2">
+                                                    <span onClick={() => {
+                                                        setSelectedTaskId(task.taskId);
+                                                        setIsPopupOpen(true);
+                                                    }}
+                                                        className='cursor-pointer bg-blue-100 py-1 px-2 rounded-full'
+                                                    >
+                                                        <Eye className='text-blue-900  w-4 h-4 ' />
+                                                    </span>
                                                     <span className={`px-2.5 py-0.5 rounded-full text-sm font-medium
                                             ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
                                                             task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
@@ -744,6 +753,22 @@ const UserDashboard = () => {
                     openProfile={openProfile}
                 />
 
+                <TaskDetailPopup
+                    isPopupOpen={isPopupOpen}
+                    onClose={() => {
+                        setIsPopupOpen(false);
+                        setSelectedTaskId(0);
+                    }}
+                    taskId={selectedTaskId}
+                />
+
+                {selected && (
+                    <TeamDetailsPopup
+                        team={selected}
+                        users={users}
+                        onClose={closeModal}
+                    />
+                )}
             </div>
         </>
     )

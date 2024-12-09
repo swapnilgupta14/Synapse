@@ -2,16 +2,17 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 
-import { archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../../redux/taskSlice';
+import { archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../../redux/reducers/taskSlice';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../../../component/ui/Card';
 import { RootState, Task } from '../../../types';
 import { useAppSelector } from '../../../redux/store';
 import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
 import { User } from '../../../types';
-import { Trash2, Archive, Users, AlertTriangle, X } from 'lucide-react';
+import { Trash2, Archive, Users, AlertTriangle, X, LogOut } from 'lucide-react';
 
-import { logout } from '../../../redux/authSlice';
+import { logout } from '../../../redux/reducers/authSlice';
+import ProfilePopup from '../../../component/popups/ProfilePopup';
 
 
 const AdminDashboard: React.FC = () => {
@@ -25,6 +26,9 @@ const AdminDashboard: React.FC = () => {
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [showReassignDialog, setShowReassignDialog] = useState(false);
   const [archiveDate, setArchiveDate] = useState(new Date());
+
+  const [profile, openProfile] = useState(false);
+
 
   type reassignDataType = {
     fromUserId: number,
@@ -224,7 +228,7 @@ const AdminDashboard: React.FC = () => {
 
         <div className="flex items-center space-x-4">
           <button
-            // onClick={() => openProfile(true)}
+            onClick={() => openProfile(true)}
             className="flex items-center justify-center gap-2 bg-slate-200 hover:bg-white border border-black text-black px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
           >
             Role: <span className='font-semibold'>{user?.role}</span>
@@ -267,6 +271,8 @@ const AdminDashboard: React.FC = () => {
             className="flex items-center justify-center gap-2 bg-red-500 text-white text-sm px-4 py-2 hover:bg-red-600 transition rounded-3xl"
           >
             Logout
+            <LogOut className="w-4 h-4" />
+
           </button>
         </div>
       </header>
@@ -279,9 +285,10 @@ const AdminDashboard: React.FC = () => {
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
+
               <thead>
                 <tr className="border-b">
-                  <th className="p-3">
+                  <th>
                     <input
                       type="checkbox"
                       onChange={(e) => {
@@ -306,10 +313,11 @@ const AdminDashboard: React.FC = () => {
                   <th className="p-3 text-left">Action</th>
                 </tr>
               </thead>
+
               <tbody>
                 {taskArr.map((task, index) => (
                   <tr key={task.taskId} className="border-b">
-                    <td className="p-3">
+                    <td className="flex items-center justify-center">
                       <input
                         type="checkbox"
                         checked={selectedTasks.includes(task.taskId)}
@@ -317,76 +325,71 @@ const AdminDashboard: React.FC = () => {
                           if (e.target.checked) {
                             setSelectedTasks([...selectedTasks, task.taskId]);
                           } else {
-                            setSelectedTasks(selectedTasks.filter(id => id !== task.taskId));
+                            setSelectedTasks(selectedTasks.filter((id) => id !== task.taskId));
                           }
                         }}
                       />
                     </td>
                     <td className="p-3">{index + 1}</td>
                     <td className="p-3">{task.taskId}</td>
-                    <td className="p-3">{task.title}</td>
-                    <td className="p-3">{new Date(task.createdBy).toLocaleDateString()}</td>
-                    <td className="p-3">{task.createdBy}</td>
-                    <td className="p-3">{task.createdBy === task.assignedTo ? "Self" : task.assignedTo}</td>
+                    <td className="p-3 truncate-cell" title={task.title}>
+                      {task.title}
+                    </td>
+                    <td className="p-3 truncate-cell" title={new Date(task.createdBy).toLocaleDateString()}>
+                      {new Date(task.createdBy).toLocaleDateString()}
+                    </td>
+                    <td className="p-3 truncate-cell" title={String(task.createdBy)}>{task.createdBy}</td>
+                    <td className="p-3 truncate-cell" title={String(task.assignedTo)}>
+                      {task.createdBy === task.assignedTo ? "Self" : task.assignedTo}
+                    </td>
                     <td className="p-3">
-                      <span className={`px-2 py-1 rounded-full text-xs ${task.priority === 'high' ? 'bg-red-200 text-red-800' :
-                        task.priority === 'medium' ? 'bg-yellow-200 text-yellow-800' :
-                          'bg-green-200 text-green-800'
-                        }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${task.priority === "high"
+                          ? "bg-red-200 text-red-800"
+                          : task.priority === "medium"
+                            ? "bg-yellow-200 text-yellow-800"
+                            : "bg-green-200 text-green-800"
+                          }`}
+                      >
                         {task.priority}
                       </span>
                     </td>
-                    <td className="p-3">{task.category}</td>
+                    <td className="p-3 truncate-cell" title={task.category}>{task.category}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-1 rounded-full text-xs ${task.status === 'completed' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'
-                        }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${task.status === "completed"
+                          ? "bg-green-200 text-green-800"
+                          : "bg-yellow-200 text-yellow-800"
+                          }`}
+                      >
                         {task.status}
                       </span>
                     </td>
-                    <td className="p-3">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</td>
-                    <td className='p-3 flex justify-between items-center'>
-                      <span className='py-1 px-2 bg-blue-100 text-blue-700 rounded-xl text-xs cursor-pointer hover:bg-black hover:text-white'
+                    <td className="p-3 truncate-cell" title={task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"}>
+                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"}
+                    </td>
+                    <td className="p-3 flex justify-between items-center">
+                      <span
+                        className="py-1 px-2 bg-blue-100 text-blue-700 rounded-xl text-xs cursor-pointer hover:bg-black hover:text-white"
                         onClick={() => {
                           setSelectedTaskId(task.taskId);
                           setIsPopupOpen(true);
                         }}
-                      >View</span>
-                      <span className='w-6 h-6 flex justify-center items-center bg-red-200 rounded-full text-xs text-white cursor-pointer hover:bg-black hover:text-white'>
+                      >
+                        View
+                      </span>
+                      <span className="w-6 h-6 flex justify-center items-center bg-red-200 rounded-full text-xs text-white cursor-pointer hover:bg-black hover:text-white">
                         <Trash2 size={14} className="text-red-800 hover:text-white" />
                       </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </CardContent>
       </Card>
-
-
-      {/* <div className="h-[50vh] w-full flex gap-4">
-        <div className="flex-1 h-full flex">
-          <GridComponent />
-        </div>
-        <div className="w-[1/4] h-full">
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Completion Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LineChart width={500} height={300} data={getCompletionTrendData()} className="p-0 pr-10">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="completed" stroke="#10B981" name="Completed" />
-                <Line type="monotone" dataKey="created" stroke="#6366F1" name="Created" />
-              </LineChart>
-            </CardContent>
-          </Card>
-        </div>
-      </div> */}
 
       <BulkActionsDialog />
       <ArchiveDialog />
@@ -399,6 +402,12 @@ const AdminDashboard: React.FC = () => {
           setSelectedTaskId(0);
         }}
         taskId={selectedTaskId}
+      />
+
+      <ProfilePopup
+        profile={profile}
+        user={user}
+        openProfile={openProfile}
       />
 
       <Outlet />

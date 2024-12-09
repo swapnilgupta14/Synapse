@@ -16,7 +16,7 @@ import {
   addMembersToOrg,
   loadMembers,
   removeMemberFromOrg,
-} from "../../redux/orgSlice";
+} from "../../redux/reducers/orgSlice";
 import { useAppSelector } from "../../redux/store";
 
 interface AddMembersComponentProps {

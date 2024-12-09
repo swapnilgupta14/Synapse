@@ -15,6 +15,25 @@ export interface User {
   teamId?: number[];
 }
 
+export interface Task {
+  taskId: number;
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
+  category: string;
+  dueDate: string;
+  status: "completed" | "pending" | "in-progress";
+  createdAt: string;
+  updatedAt?: string;
+  completedAt?: string;
+  assignedTo: number;
+  teamId?: number;
+  projectId?: number;
+  organisationId?: number;
+  createdBy: number;
+  lastModifiedBy?: number;
+}
+
 export type RoleType =
   | "Admin"
   | "Organisation"
@@ -36,8 +55,7 @@ export interface Project {
   description?: string;
   organisationId: number;
   projectManagerId: number;
-  teams: Team[];
-  // teams: number[];
+  teams: number[];
   createdAt: string;
   status: "active" | "archived" | "planning";
   startDate?: string;
@@ -54,24 +72,6 @@ export interface Team {
   description?: string;
 }
 
-export interface Task {
-  taskId: number;
-  title: string;
-  description: string;
-  priority: "high" | "medium" | "low";
-  category: string;
-  dueDate: string;
-  status: "completed" | "pending" | "in-progress";
-  createdAt: string;
-  updatedAt?: string;
-  completedAt?: string;
-  assignedTo: number;
-  teamId?: number;
-  projectId?: number;
-  organisationId?: number;
-  createdBy: number;
-  lastModifiedBy?: number;
-}
 
 export interface AuthState {
   user: User | null;
@@ -154,7 +154,9 @@ export interface UpdateTaskPayload {
   priority?: "high" | "medium" | "low";
   category?: string;
   dueDate?: string;
-  status?: "pending" | "completed";
+  status?: "pending" | "completed" | "in-progress";
+  updatedAt?: string;
+  lastModifiedBy?: number;
 }
 
 export interface BulkUpdatePayload {

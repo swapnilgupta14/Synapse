@@ -1,25 +1,83 @@
 {
-    "users": [
+    "features": [
         {
-            "id": 1,
-            "username": "admin",
-            "email": "admin@gmail.com",
-            "password": "admin123",
-            "role": "admin"
-        }
-    ],
-    "tasks": [
-        {
-            "id": 1,
-            "title": "Task 1",
-            "description": "Description 1",
-            "status": "pending"
+            "icon": "CheckCircle",
+            "title": "Comprehensive Task Management",
+            "color": "bg-pink-100",
+            "description": "Create, assign, and track tasks with priority levels, deadlines, and dependencies. Easily manage personal and team tasks."
         },
         {
-            "id": 2,
-            "title": "Task 2",
-            "description": "Description 2",
-            "status": "completed"
+            "icon": "Layers",
+            "title": "Multi-Organization Support",
+            "color": "bg-green-100",
+            "description": "Manage multiple organizations and teams under one account. Flexible task management across different departments."
+        },
+        {
+            "icon": "Calendar",
+            "title": "Flexible Dashboard",
+            "color": "bg-red-100",
+            "description": "Intuitive 3-day rolling dashboard with drag-and-drop functionality. Switch between day and calendar views effortlessly."
+        },
+        {
+            "icon": "Lock",
+            "title": "Role-Based Access Control",
+            "color": "bg-yellow-100",
+            "description": "Granular permission system with roles like Admin, Project Manager, Team Lead, and Member. Secure and controlled task access."
+        },
+        {
+            "icon": "MessageCircle",
+            "title": "Collaborative Communication",
+            "color": "bg-orange-100",
+            "description": "In-task commenting with @mentions, rich text editing, file attachments, and comment threads for seamless team collaboration."
+        },
+        {
+            "icon": "Share2",
+            "title": "Team and Project Management",
+            "color": "bg-cyan-100",
+            "description": "Create teams, assign leads, manage members, and oversee project progress with intuitive team management tools."
+        }
+    ],
+    "quickLinks": [
+        {
+            "title": "Product",
+            "links": [
+                "Features",
+                "Pricing",
+                "Integrations"
+            ]
+        },
+        {
+            "title": "Company",
+            "links": [
+                "About",
+                "Careers",
+                "Press"
+            ]
+        },
+        {
+            "title": "Resources",
+            "links": [
+                "Blog",
+                "Help Center",
+                "Documentation"
+            ]
+        }
+    ],
+    "socialLinks": [
+        {
+            "icon": "Twitter",
+            "href": "#",
+            "name": "Twitter"
+        },
+        {
+            "icon": "Linkedin",
+            "href": "#",
+            "name": "LinkedIn"
+        },
+        {
+            "icon": "Github",
+            "href": "#",
+            "name": "GitHub"
         }
     ]
 }

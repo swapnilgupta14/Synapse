@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch } from '../redux/store';
-import { login } from '../redux/authSlice';
+import { login } from '../redux/reducers/authSlice';
 import { Organisation, User } from '../types';
 import { AuthUI } from './authUI';
 import { generateToken } from '../utils/generateToken';

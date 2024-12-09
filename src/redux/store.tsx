@@ -1,10 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
-import authReducer from './authSlice';
-import taskReducer from './taskSlice';
-import orgReducer from "./orgSlice.tsx";
-import { projectsReducer } from './projectsSlice';
-import { teamsReducer } from './teamsSlice.tsx';
+import authReducer from './reducers/authSlice';
+import taskReducer from './reducers/taskSlice.tsx';
+import orgReducer from "./reducers/orgSlice.tsx";
+import { projectsReducer } from './reducers/projectsSlice.tsx';
+import { teamsReducer } from './reducers/teamsSlice.tsx';
 
 export const store = configureStore({
   reducer: {

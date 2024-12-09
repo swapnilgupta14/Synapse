@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Plus, X } from 'lucide-react';
-import { addTeam, updateTeam } from '../../redux/teamsSlice';
+import { addTeam, updateTeam } from '../../redux/reducers/teamsSlice';
 import { RootState } from '../../redux/store';
 import { Team } from '../../types';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Users,
@@ -9,19 +9,20 @@ import {
   Edit,
   Save,
   Trash2,
-  // PlusCircle,
   Clock,
   CheckCircle2,
-  Archive
+  Archive,
+  Eye
 } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import {
   updateProject,
-  // assignTeamToProject,
   removeTeamFromProject
-} from '../../redux/projectsSlice';
-import { RootState } from '../../redux/store';
-import { Project, Team } from '../../types';
+} from '../../redux/reducers/projectsSlice';
+import TeamDetailsPopup from '../popups/TeamDetailPopup';
+import { RootState, useAppSelector } from '../../redux/store';
+import { Project, Team, User } from '../../types';
+import { loadFromLocalStorage } from '../../utils/localStorage';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -30,8 +31,32 @@ interface ProjectDetailsProps {
 
 const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose }) => {
   const dispatch = useDispatch();
-  const teams = useSelector((state: RootState) => state.teams.teams);
+  const teams = useAppSelector((state: RootState) => state.teams.teams);
   const [isEditing, setIsEditing] = useState(false);
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [selected, setSelected] = useState<Team | null>(null);
+
+  const userCurr = useAppSelector((state) => state.auth.user)
+
+
+  useEffect(() => {
+    const signedUpUsers = loadFromLocalStorage("SignedUpUsers", []);
+    if (signedUpUsers) {
+      setUsers(signedUpUsers);
+    }
+  }, []);
+
+  const handleTeamClick = (team: Team) => {
+    setSelected(team);
+  };
+
+
+  const closeModal = () => {
+    setSelected(null);
+  };
+
+
 
   const [editedProject, setEditedProject] = useState<Partial<Project>>({
     name: project.name,
@@ -42,9 +67,10 @@ const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose })
     projectManagerId: project.projectManagerId
   });
 
-  const [selectedTeams, setSelectedTeams] = useState<Team[]>(project.teams || []);
+  const [selectedTeams, setSelectedTeams] = useState<number[]>(project.teams || []);
+
   const [availableTeams, setAvailableTeams] = useState<Team[]>(
-    teams.filter(team => !project.teams.some(pt => pt.teamId === team.teamId))
+    teams.filter(team => !project.teams.some(it => it === team.teamId))
   );
 
   const formatDate = (dateString?: string) =>
@@ -102,10 +128,11 @@ const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose })
       projectId: project.projectId,
       teamId
     }));
-    const removedTeam = selectedTeams.find(t => t.teamId === teamId);
-    if (removedTeam) {
-      setAvailableTeams([...availableTeams, removedTeam]);
-      setSelectedTeams(selectedTeams.filter(t => t.teamId !== teamId));
+    const removedTeam = selectedTeams.find(it => it === teamId);
+    const findTeams = teams.find(it => it.teamId === removedTeam);
+    if (removedTeam && findTeams) {
+      setAvailableTeams([...availableTeams, findTeams]);
+      setSelectedTeams(selectedTeams.filter(t => t !== teamId));
     }
   };
 
@@ -155,7 +182,7 @@ const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose })
             <h3 className="text-lg font-semibold text-gray-800">
               Project Information
             </h3>
-            {!isEditing ? (
+            {(userCurr?.role === "Admin" || (userCurr?.role === "Organisation" && project.projectId === userCurr.id)) && (!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
                 className="text-gray-600 hover:text-gray-900 transition-colors rounded-full p-2 hover:bg-gray-200"
@@ -169,7 +196,7 @@ const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose })
               >
                 <X size={20} />
               </button>
-            )}
+            ))}
           </div>
 
           <div className="space-y-2">
@@ -284,45 +311,36 @@ const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose })
                   <Users className="mr-2 text-black" size={20} />
                   Assigned Teams
                 </h3>
-                {/* {isEditing && availableTeams.length > 0 && (
-                  <select
-                    onChange={(e) => {
-                      const teamToAdd = teams.find(
-                        t => t.teamId === parseInt(e.target.value)
-                      );
-                      if (teamToAdd) handleTeamAdd(teamToAdd);
-                    }}
-                    className="p-1 border rounded focus:ring-2 focus:ring-blue-200"
-                  >
-                    <option value="">Add Team</option>
-                    {availableTeams.filter((team) => ).map(team => (
-                      <option key={team.teamId} value={team.teamId}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                )} */}
               </div>
 
               {selectedTeams.length > 0 ? (
                 <div className="grid grid-cols-1 gap-3">
                   {selectedTeams.map((team) => (
                     <div
-                      key={team.teamId}
+                      key={team}
                       className="bg-gray-100 p-3 rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors"
                     >
                       <div className="flex items-center">
                         <UserCircle className="mr-3 text-blue-600" size={20} />
-                        <span className="text-gray-800 font-medium">{team.name}</span>
+                        <span className="text-gray-800 font-medium">{teams.find((it) => it.teamId === team)?.name} {" "} [Id: {team}]</span>
                       </div>
-                      {isEditing && (
-                        <button
-                          onClick={() => handleTeamRemove(team.teamId)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      )}
+                      <div className='flex gap-2 items-center justify-center'>
+                        <Eye className='text-blue-600 hover:text-gray-700 '
+                          onClick={() => {
+                            const t = teams.find((it) => it.teamId === team);
+                            if (!t) return;
+                            handleTeamClick(t)
+                          }}
+                        />
+                        {isEditing && (
+                          <button
+                            onClick={() => handleTeamRemove(team)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -333,6 +351,14 @@ const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose })
               )}
             </div>
           </div>
+
+          {selected && (
+            <TeamDetailsPopup
+              team={selected}
+              users={users}
+              onClose={closeModal}
+            />
+          )}
 
           {isEditing &&
             <div className='w-full flex justify-end p-4 gap-2'>

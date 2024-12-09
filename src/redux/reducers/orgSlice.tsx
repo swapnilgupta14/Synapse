@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '../types';
-import { RootState } from '../redux/store';
+import { User } from '../../types';
+import { RootState } from '../store';
+// import { loadFromLocalStorage } from '../../utils/localStorage';
 
 interface OrganisationState {
     members: User[];
@@ -84,6 +85,10 @@ const organisationSlice = createSlice({
             state.members = state.members.filter(
                 member => member.email !== memberEmail
             );
+
+            // const currentOrgId = loadFromLocalStorage("userCurrent")
+            // const teams = loadFromLocalStorage("teams", []);
+
 
             const allUsers = JSON.parse(localStorage.getItem('SignedUpUsers') || '[]');
             const updatedUsers = allUsers.map((user: User) =>

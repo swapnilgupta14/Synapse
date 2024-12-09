@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../redux/store";
 import {
     addProject,
     deleteProject
-} from "../../redux/projectsSlice";
+} from "../../redux/reducers/projectsSlice";
 import {
     Folder,
     Plus,
@@ -93,7 +93,7 @@ const ProjectsComponent: React.FC = () => {
                         <div
                             key={project.projectId}
                             onClick={() => setSelectedProject(project)}
-                            className="flex flex-col justify-between bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-200 transition"
+                            className="flex flex-col justify-between bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-300 cursor-pointer hover:bg-gray-200 transition"
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex-grow">
@@ -113,22 +113,22 @@ const ProjectsComponent: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-3 gap-2 text-center border-t-2 pt-3">
                                 <div className="flex flex-col items-center">
-                                    <Calendar size={16} className="text-gray-500 mb-1" />
-                                    <span className="text-xs text-gray-600">
+                                    <Calendar size={16} className="text-blue-500 mb-1" />
+                                    <span className="text-sm text-blue-600">
                                         {project.startDate
                                             ? new Date(project.startDate).toLocaleDateString()
                                             : 'N/A'}
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <UsersIcon size={16} className="text-gray-500 mb-1" />
-                                    <span className="text-xs text-gray-600">
+                                    <UsersIcon size={16} className="text-yellow-500 mb-1" />
+                                    <span className="text-sm text-yellow-500">
                                         {project.teams?.length || 0} Teams
                                     </span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <BarChart size={16} className="text-gray-500 mb-1" />
-                                    <span className="text-xs text-gray-600 capitalize">
+                                    <BarChart size={16} className="text-red-500 mb-1" />
+                                    <span className="text-sm text-red-600 capitalize">
                                         {project.status}
                                     </span>
                                 </div>

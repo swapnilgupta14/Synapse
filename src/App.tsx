@@ -19,12 +19,14 @@ import AllTasks from './pages/dashboards/AdminDashboard/allTasks';
 import AllProjects from './pages/dashboards/AdminDashboard/allProjects';
 import AllUsers from './pages/dashboards/AdminDashboard/allUsers';
 import Analytics from './pages/dashboards/AdminDashboard/analytics';
-import AllTeams from './pages/dashboards/AdminDashboard/allteams';
+import AllTeams from './pages/dashboards/AdminDashboard/allTeams';
 
 import UserDashboard from './pages/dashboards/UserDashboard';
 import OrganisationDashboard from './pages/dashboards/OrganisationDashboard';
 
 import { User } from './types';
+import OrganizationHierarchyPage from "./pages/dashboards/OrganisationDashboard/Hierarchy";
+import CreateProject from './pages/dashboards/OrganisationDashboard/CreateProject';
 
 const DashboardRedirect: React.FC = () => {
     const { user } = useAppSelector((state) => state.auth);
@@ -83,6 +85,7 @@ const App: React.FC = () => {
                     <Route element={<ProtectedRoute allowedRoles={allowedRoles} />}>
                         <Route path="/dashboard" element={<Dashboard />}>
                             <Route index element={<DashboardRedirect />} />
+
                             <Route path="admin" element={<AdminDashboard />}>
                                 <Route path="tasks" element={<AllTasks />} />
                                 <Route path="projects" element={<AllProjects />} />
@@ -90,8 +93,13 @@ const App: React.FC = () => {
                                 <Route path="analytics" element={<Analytics />} />
                                 <Route path="teams" element={<AllTeams />} />
                             </Route>
+
+                            <Route path="organisation" element={<OrganisationDashboard />}>
+                                <Route path="createProject" element={<CreateProject />} />
+                                <Route path="hierarchy" element={<OrganizationHierarchyPage />} />
+                            </Route>
+
                             <Route path="user" element={<UserDashboard />} />
-                            <Route path="organisation" element={<OrganisationDashboard />} />
                         </Route>
                     </Route>
                     <Route path="*" element={<Navigate to="/" replace />} />

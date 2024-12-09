@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Task, User } from "../types";
-import { AddTaskPayload, BulkUpdatePayload, UpdateTaskPayload, AdminTaskUpdatePayload, TaskState } from "../types";
+import { Task, User } from "../../types";
+import { AddTaskPayload, BulkUpdatePayload, UpdateTaskPayload, AdminTaskUpdatePayload, TaskState } from "../../types";
+import { loadFromLocalStorage } from '../../utils/localStorage';
 
 const initialState: TaskState = {
     tasks: JSON.parse(localStorage.getItem('tasks') || '[]'),
@@ -47,10 +48,6 @@ const taskSlice = createSlice({
             console.log(action, "action in a admin");
             console.log(state, "state in admin");
 
-            // if (action.payload.assignedTo && state.user.role !== 'Admin' && state.user.role !== 'Team Manager') {
-            //     throw new Error('Unauthorized: Only Admins or Managers can assign tasks.');
-            // }
-
             state.tasks.push(newTask);
             localStorage.setItem('tasks', JSON.stringify(state.tasks));
         },
@@ -78,7 +75,7 @@ const taskSlice = createSlice({
         deleteTask: (state, action: PayloadAction<number>) => {
             const task = state.tasks.find(task => task.taskId === action.payload);
             if (task) {
-                const isPersonalTask = task.createdBy === state.user.id || state?.user?.role;
+                const isPersonalTask = task.createdBy === state.user.id || task.createdBy === task.assignedTo || state?.user?.role;
 
                 if (
                     state.user.role === 'Admin' ||
@@ -209,8 +206,9 @@ const taskSlice = createSlice({
         },
 
         generateTaskStatistics: (state) => {
-            console.log(state.user.role, "state is ----- > ")
-            if (state.user.role !== 'Admin') {
+            const getCurrent = loadFromLocalStorage("userCurrent", {} as User);
+
+            if (state.user.role !== 'Admin' || (getCurrent && getCurrent.role !== "Admin")) {
                 throw new Error('Unauthorized: Only Admins can access statistics.');
             }
 
