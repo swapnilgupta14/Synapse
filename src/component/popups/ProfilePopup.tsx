@@ -1,5 +1,5 @@
 import React from 'react';
-import { Key, Shield, Calendar, Mail, Edit3, X, ExternalLink, PersonStanding, User2 } from 'lucide-react';
+import { Key, Shield, Calendar, Mail, Edit3, X, ExternalLink, User2 } from 'lucide-react';
 import { User } from "../../types"
 
 interface ProfileModalProps {
