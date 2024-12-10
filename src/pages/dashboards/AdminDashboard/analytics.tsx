@@ -26,8 +26,8 @@ interface InfoCardProps {
 }
 
 const InfoCard: React.FC<InfoCardProps> = ({ icon, label, value }): JSX.Element => (
-  <div className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
-    <div className="flex items-center gap-2 mb-4">
+  <div className="border border-gray-200 rounded-xl p-2 hover:border-gray-300 transition-colors">
+    <div className="flex items-center gap-2 mb-2">
       <span className="text-gray-400">{icon}</span>
       <span className="text-sm text-gray-500">{label}</span>
     </div>
@@ -109,7 +109,6 @@ const Analytics = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="container mx-auto">
-        <h1 className="text-xl font-semibold text-black mb-6">Analytics Page</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           <div className="bg-white shadow-md rounded-lg p-6">
@@ -179,6 +178,7 @@ const Analytics = () => {
               </PieChart>
             </ResponsiveContainer>
           </div>
+          
 
           <div className="bg-white shadow-md rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">

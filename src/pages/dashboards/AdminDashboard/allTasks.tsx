@@ -27,6 +27,7 @@ const AdminDashboard: React.FC = () => {
   const [showReassignDialog, setShowReassignDialog] = useState(false);
   const [archiveDate, setArchiveDate] = useState(new Date());
 
+  const [activeTab, setActiveTab] = useState('all-tasks');
   const [profile, openProfile] = useState(false);
 
 
@@ -67,13 +68,6 @@ const AdminDashboard: React.FC = () => {
                 <option value="low">Low</option>
               </select>
             </div>
-
-            <button
-              onClick={handleBulkDelete}
-              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors"
-            >
-              Delete Selected Tasks
-            </button>
           </div>
         </div>
       </div>
@@ -279,9 +273,28 @@ const AdminDashboard: React.FC = () => {
 
 
       <Card>
-        <CardHeader>
-          <CardTitle className='px-3 py-2'>All Tasks</CardTitle>
-        </CardHeader>
+        <div className="w-full">
+          <div className="flex border-b p-4 gap-3">
+            <button
+              onClick={() => setActiveTab('all-tasks')}
+              className={`h-fit px-3 py-1 font-medium transition-colors rounded-lg  duration-200 ${activeTab === 'all-tasks'
+                  ? 'text-blue-800 bg-blue-100'
+                  : 'text-gray-700  hover:text-gray-600'
+                }`}
+            >
+              All Tasks
+            </button>
+            <button
+              onClick={() => setActiveTab('archived-tasks')}
+              className={`h-fit px-3 py-1 font-medium transition-colors rounded-lg duration-200 ${activeTab === 'archived-tasks'
+                ? 'text-blue-800 bg-blue-100'
+                : 'text-gray-700  hover:text-gray-600'
+              }`}
+            >
+              Archived Tasks
+            </button>
+          </div>
+        </div>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -378,9 +391,11 @@ const AdminDashboard: React.FC = () => {
                       >
                         View
                       </span>
-                      <span className="w-6 h-6 flex justify-center items-center bg-red-200 rounded-full text-xs text-white cursor-pointer hover:bg-black hover:text-white">
+
+                      <span className="w-6 h-6 flex justify-center items-center bg-red-200 rounded-full text-xs text-white cursor-pointer hover:text-white">
                         <Trash2 size={14} className="text-red-800 hover:text-white" />
                       </span>
+
                     </td>
                   </tr>
                 ))}

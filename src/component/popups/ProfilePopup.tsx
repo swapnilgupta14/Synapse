@@ -1,5 +1,5 @@
 import React from 'react';
-import { Key, Shield, Calendar, Mail, Edit3, X, ExternalLink } from 'lucide-react';
+import { Key, Shield, Calendar, Mail, Edit3, X, ExternalLink, PersonStanding, User2 } from 'lucide-react';
 import { User } from "../../types"
 
 interface ProfileModalProps {
@@ -55,12 +55,8 @@ const ProfilePopup: React.FC<ProfileModalProps> = ({ profile, user, openProfile 
                     <div className="space-y-8">
                         <div className="flex items-start gap-6">
                             <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 relative group">
-                                <img
-                                    src="/api/placeholder/150/150"
-                                    alt={`${user?.username}'s profile`}
-                                    className="w-full h-full object-cover"
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <User2 className='w-full h-full p-4'/>
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/70 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer">
                                     <ExternalLink size={20} className="text-white" />
                                 </div>
                             </div>
@@ -93,7 +89,7 @@ const ProfilePopup: React.FC<ProfileModalProps> = ({ profile, user, openProfile 
                                     className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
                                     type="button"
                                 >
-                                    Regenerate
+                                    Regenerate Public Link
                                 </button>
                             </div>
                             <code className="text-sm font-mono bg-white p-2 rounded border border-gray-200 block overflow-x-auto">
