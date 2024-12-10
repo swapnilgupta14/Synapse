@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 
-import { archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../../redux/reducers/taskSlice';
+import { archiveTasks, updateTaskPriorities, reassignTasks } from '../../../redux/reducers/taskSlice';
+// import { archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../../redux/reducers/taskSlice';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../../../component/ui/Card';
+import { Card, CardContent } from '../../../component/ui/Card';
 import { RootState, Task } from '../../../types';
 import { useAppSelector } from '../../../redux/store';
 import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
@@ -202,13 +203,13 @@ const AdminDashboard: React.FC = () => {
     setShowReassignDialog(false);
   };
 
-  const handleBulkDelete = () => {
-    selectedTasks.forEach(taskId => {
-      dispatch(deleteTask(taskId));
-    });
-    setSelectedTasks([]);
-    setShowBulkActions(false);
-  };
+  // const handleBulkDelete = () => {
+  //   selectedTasks.forEach(taskId => {
+  //     dispatch(deleteTask(taskId));
+  //   });
+  //   setSelectedTasks([]);
+  //   setShowBulkActions(false);
+  // };
 
   return (
     <div className='w-full h-screen flex flex-col gap-4 px-6'>
