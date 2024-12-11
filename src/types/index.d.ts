@@ -26,7 +26,7 @@ export interface Task {
   createdAt: string;
   updatedAt?: string;
   completedAt?: string;
-  assignedTo: number;
+  assignedTo: number | undefined;
   teamId?: number;
   projectId?: number;
   organisationId?: number;
@@ -83,6 +83,7 @@ export interface AuthState {
 export interface TaskState {
   tasks: Task[];
   user: User;
+  lastTaskTimestamp?: number;
   currentProject?: Project;
   currentOrganisation?: Organisation;
   statistics: {

@@ -81,7 +81,7 @@ const UserDashboard = () => {
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [selectedMember, setSelectedMember] = useState<selectedMember>(null);
 
-    const [isPopupOpen, setIsPopupOpen] = useState<Boolean>(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [selectedTaskId, setSelectedTaskId] = useState<number>(0);
 
     // const handleTaskDetailPopup = () => {
@@ -193,30 +193,54 @@ const UserDashboard = () => {
 
     const handleAddTask = () => {
         try {
-            if (currentUser) {
-                const new_task: Task = {
-                    ...newTask,
-                    taskId: Date.now(),
-                    status: 'pending',
-                    createdAt: new Date().toISOString(),
-                    createdBy: currentUser.id,
-                    assignedTo: taskType === 'team' ? selectedMember?.id : currentUser.id
-                };
-                dispatch(addTask(new_task));
-
-                setNewTask({
-                    title: '',
-                    description: '',
-                    priority: 'medium',
-                    category: 'General',
-                    dueDate: '',
-                });
-                setShowAddTask(false);
+            if (!currentUser) {
+                throw new Error("User is not authenticated");
             }
+
+            let baseTask: Task = {
+                ...newTask,
+                taskId: Date.now(),
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                createdBy: currentUser.id,
+                assignedTo: undefined,
+            };
+
+            if (taskType === 'team' && selectedTeam && !selectedMember) {
+                const teamTasks: Task[] = selectedTeam.members
+                    .filter(member => member.role !== "Team Manager")
+                    .map(member => ({
+                        ...baseTask,
+                        assignedTo: member.id,
+                        teamId: selectedTeam.teamId,
+                    }));
+
+                teamTasks.forEach((eachTask) => dispatch(addTask(eachTask)))
+
+            } else {
+                const individualTask: Task = {
+                    ...baseTask,
+                    assignedTo: selectedMember?.id,
+                };
+
+                console.log(individualTask, "Individual task to add");
+                dispatch(addTask(individualTask));
+            }
+
+            setNewTask({
+                title: '',
+                description: '',
+                priority: 'medium',
+                category: 'General',
+                dueDate: '',
+            });
+            setShowAddTask(false);
         } catch (err) {
             alert(err instanceof Error ? err.message : 'An unexpected error occurred');
         }
     };
+
+
 
     const handleToggleStatus = (taskId: number) => {
         try {
@@ -329,10 +353,10 @@ const UserDashboard = () => {
                 </div>
             </header>
             <div className='flex flex-col lg:flex-row-reverse items-start justify-between gap-3 p-3'>
-                <div className="w-1/4 space-y-4 min-h-screen flex flex-col justify-start py-4 px-3 bg-white rounded-2xl">
 
-                    {(user?.role === "Team Manager" && managedTeams.length > 0) ||
-                        (user?.role === "Team Member" && workTeam.length > 0) ? (
+                {(user?.role === "Team Manager" && managedTeams.length > 0) ||
+                    (user?.role === "Team Member" && workTeam.length > 0) ? (
+                    <div className="w-1/4 space-y-4 min-h-screen flex flex-col justify-start py-4 px-3 bg-white rounded-2xl">
                         <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
                             <div className="flex-1 p-2 rounded-xl bg-white w-full">
                                 <p className="text-md flex items-center gap-2 mb-4 bg-gray-200 text-gray-700 py-1 px-3 w-fit rounded-xl">
@@ -347,9 +371,9 @@ const UserDashboard = () => {
                                 </div>
                             </div>
                         </div>
-                    ) : null}
+                    </div>
+                ) : null}
 
-                </div>
 
 
                 <div className="flex-1 flex flex-col items-center justify-start gap-4 w-full">
@@ -482,6 +506,9 @@ const UserDashboard = () => {
                         ) : (
                             <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
                                 {/* {JSON.stringify(currentUserTasks)} */}
+                                {filteredTasks?.length < 1 && <div className='text-center text-gray-600 py-10'>
+                                    No tasks found! Create some...
+                                </div>}
                                 {filteredTasks.map(task => (
                                     <div
                                         key={task.taskId}
@@ -525,14 +552,19 @@ const UserDashboard = () => {
                                                             {task.category}
                                                         </span>
                                                     )}
+                                                    {task.createdBy !== task?.assignedTo && (
+                                                        <span className="px-2.5 py-0.5 rounded-full text-sm font-medium bg-orange-200 text-orange-900">
+                                                            Team Task
+                                                        </span>
+                                                    )}
                                                     {
                                                         task.assignedTo === task.createdBy ? (
                                                             <span className='px-2.5 py-0.5 rounded-full text-sm font-medium bg-gray-300 text-black flex'>
                                                                 Self Assigned Task
                                                             </span>
                                                         ) : (
-                                                            <span className='px-2.5 py-0.5 rounded-full text-sm font-medium bg-gray-800 text-white'>
-                                                                Assigned
+                                                            <span className='px-2.5 py-0.5 rounded-full text-sm font-medium bg-stone-300 text-stone-700'>
+                                                                Assigned {user?.role === "Team Manager" ? `To: ${users.find((it) => it.id === task.assignedTo)?.username}` : `By: ${users.find((it) => it.id === task.createdBy)?.username}`}
                                                             </span>
                                                         )
                                                     }
@@ -541,6 +573,7 @@ const UserDashboard = () => {
                                                             Due {new Date(task.dueDate).toLocaleDateString()}
                                                         </span>
                                                     )}
+
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-2">

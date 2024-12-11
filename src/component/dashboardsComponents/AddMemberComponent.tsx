@@ -117,7 +117,7 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = ({
 
       {isPopupOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-2xl w-[600px] max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-xl shadow-2xl w-[50vw] h-[70vh] flex flex-col">
             <div className="text-black p-6 pt-4 py-2 rounded-t-xl flex justify-between items-center">
               <h2 className="text-xl font-medium py-2">Add New Members in the Organisation</h2>
               <button
@@ -128,7 +128,7 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = ({
               </button>
             </div>
 
-            <div className="p-6 flex-grow overflow-auto">
+            <div className="p-6 py-3 flex-grow overflow-auto">
               <div className="mb-6">
                 <div className="flex space-x-4">
                   <div className="relative flex-grow">
@@ -195,12 +195,12 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = ({
 
               <div className="mt-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                  Organisation Members ({members.length})
+                  Organization Members ({members.length})
                 </h3>
 
                 {members.length > 0 ? (
                   <div>
-                    <div className="space-y-3 mb-4 max-h-[200px] overflow-y-auto">
+                    <div className="space-y-3 mb-4 max-h-[320px] overflow-y-auto">
                       {paginatedMembers.map((member) => (
                         <div
                           key={member.id}

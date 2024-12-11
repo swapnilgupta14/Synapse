@@ -31,26 +31,33 @@ const taskSlice = createSlice({
                 id = parsed.id;
             }
 
+            const generateUniqueId = () => Number(`${Date.now()}${Math.random().toString().slice(2, 8)}`);
+
+            let lastTimestamp = state.lastTaskTimestamp || 0;
+            let currentTimestamp = Date.now();
+            if (currentTimestamp <= lastTimestamp) {
+                currentTimestamp = lastTimestamp + 1;
+            }
+            state.lastTaskTimestamp = currentTimestamp;
+
             const newTask: Task = {
-                taskId: Date.now(),
+                taskId: generateUniqueId(),
                 title: action.payload.title,
                 description: action.payload.description || '',
                 priority: action.payload.priority,
                 category: action.payload.category || 'General',
                 dueDate: action.payload.dueDate || '',
                 status: 'pending',
-                createdAt: new Date().toISOString(),
+                createdAt: new Date(currentTimestamp).toISOString(),
                 assignedTo: action.payload.assignedTo || id,
                 teamId: action.payload.teamId || undefined,
                 createdBy: id,
             };
 
-            console.log(action, "action in a admin");
-            console.log(state, "state in admin");
-
             state.tasks.push(newTask);
             localStorage.setItem('tasks', JSON.stringify(state.tasks));
         },
+
 
         editTask: (state, action: PayloadAction<UpdateTaskPayload>) => {
             const task = state.tasks.find(task => task.taskId === action.payload.id);
@@ -75,11 +82,11 @@ const taskSlice = createSlice({
         deleteTask: (state, action: PayloadAction<number>) => {
             const task = state.tasks.find(task => task.taskId === action.payload);
             if (task) {
-                const isPersonalTask = task.createdBy === state.user.id || task.createdBy === task.assignedTo || state?.user?.role;
+                let currUser = loadFromLocalStorage("userCurrent", {} as User)
+                const isPersonalTask = task.createdBy === task.assignedTo || task.createdBy === currUser?.id;
 
                 if (
                     state.user.role === 'Admin' ||
-                    (state.user.role === 'Team Manager' && task.teamId === state.user.id) ||
                     isPersonalTask
                 ) {
                     state.tasks = state.tasks.filter(task => task.taskId !== action.payload);
@@ -93,10 +100,8 @@ const taskSlice = createSlice({
         toggleTaskStatus: (state, action: PayloadAction<number>) => {
             const task = state.tasks.find(task => task.taskId === action.payload);
             if (task) {
-                const isAssignedTask = task.assignedTo === task.createdBy || task.assignedTo === state.user.id || task.createdBy === state.user.id || state.user.role === "Team Manager";
-
-                console.log(isAssignedTask, task.assignedTo, task.createdBy, task.taskId, state.user.id, "wsjbxa");
-                console.log(task, "task");
+                let currUser = loadFromLocalStorage("userCurrent", {} as User)
+                const isAssignedTask = task.assignedTo === task.createdBy || task.assignedTo === currUser?.id || task.createdBy === currUser?.id || state.user.role === "Team Manager";
 
                 if (isAssignedTask) {
                     task.status = task.status === 'pending' ? 'completed' : 'pending';

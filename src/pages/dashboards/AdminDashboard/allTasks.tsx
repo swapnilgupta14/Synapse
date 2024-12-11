@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 
-import { archiveTasks, updateTaskPriorities, reassignTasks } from '../../../redux/reducers/taskSlice';
+import { archiveTasks, updateTaskPriorities, deleteTask } from '../../../redux/reducers/taskSlice';
 // import { archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../../redux/reducers/taskSlice';
 
 import { Card, CardContent } from '../../../component/ui/Card';
@@ -10,7 +10,7 @@ import { RootState, Task } from '../../../types';
 import { useAppSelector } from '../../../redux/store';
 import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
 import { User } from '../../../types';
-import { Trash2, Archive, Users, AlertTriangle, X, LogOut } from 'lucide-react';
+import { Trash2, Archive, Users, AlertTriangle, X, LogOut, Trash } from 'lucide-react';
 
 import { logout } from '../../../redux/reducers/authSlice';
 import ProfilePopup from '../../../component/popups/ProfilePopup';
@@ -27,6 +27,8 @@ const AdminDashboard: React.FC = () => {
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [showReassignDialog, setShowReassignDialog] = useState(false);
   const [archiveDate, setArchiveDate] = useState(new Date());
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const [activeTab, setActiveTab] = useState('all-tasks');
   const [profile, openProfile] = useState(false);
@@ -169,12 +171,12 @@ const AdminDashboard: React.FC = () => {
               ))}
             </select>
 
-            <button
+            {/* <button
               onClick={handleReassignTasks}
               className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-700 transition-colors"
             >
               Reassign Tasks
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -198,18 +200,73 @@ const AdminDashboard: React.FC = () => {
     setShowArchiveDialog(false);
   };
 
-  const handleReassignTasks = () => {
-    dispatch(reassignTasks(reassignData));
-    setShowReassignDialog(false);
+  // const handleReassignTasks = () => {
+  //   dispatch(reassignTasks(reassignData));
+  //   setShowReassignDialog(false);
+  // };
+
+  const DeleteDialog = () => {
+    if (!showDeleteDialog) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-[600px] max-w-4xl">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-black">Delete Tasks</h2>
+            <button
+              onClick={() => setShowDeleteDialog(false)}
+              className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500 hover:text-gray-700"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 p-3 rounded-md mb-4">
+              <div className="text-red-700 font-medium">
+                <p>Are you sure you want to delete {selectedTasks.length} task(s)?</p>
+                <p>This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowDeleteDialog(false)}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="flex-1 bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition-colors"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
-  // const handleBulkDelete = () => {
-  //   selectedTasks.forEach(taskId => {
-  //     dispatch(deleteTask(taskId));
-  //   });
-  //   setSelectedTasks([]);
-  //   setShowBulkActions(false);
-  // };
+  const handleBulkDelete = () => {
+    selectedTasks.forEach(taskId => {
+      dispatch(deleteTask(taskId));
+    });
+    setSelectedTasks([]);
+    setShowDeleteDialog(false);
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    try {
+      dispatch(deleteTask(taskId));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'An unexpected error occurred');
+    }
+  };
+
+
 
   return (
     <div className='w-full h-screen flex flex-col gap-4 px-6'>
@@ -233,33 +290,33 @@ const AdminDashboard: React.FC = () => {
             className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
             onClick={() => setShowBulkActions(true)}
           >
-            <AlertTriangle size={16} />
-            Bulk Actions
+            <AlertTriangle size={14} />
+            Update Priority
           </button>
 
           <button
             className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
             onClick={() => setShowArchiveDialog(true)}
           >
-            <Archive size={16} />
+            <Archive size={14} />
             Archive Tasks
           </button>
-
+          {/* 
           <button
             className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
             onClick={() => setShowReassignDialog(true)}
           >
             <Users size={16} />
             Reassign Tasks
-          </button>
-
-          {/* <button
-            onClick={() => setShowAddTask(!showAddTask)}
-            className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
-          >
-            <Plus size={16} className="text-white" />
-            Add Task
           </button> */}
+
+          <button
+            className="flex items-center justify-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-3xl shadow-sm transition-colors text-sm"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash size={14} className="text-white" />
+            Bulk Delete
+          </button>
 
           <button
             onClick={() => dispatch(logout())}
@@ -279,8 +336,8 @@ const AdminDashboard: React.FC = () => {
             <button
               onClick={() => setActiveTab('all-tasks')}
               className={`h-fit px-3 py-1 font-medium transition-colors rounded-lg  duration-200 ${activeTab === 'all-tasks'
-                  ? 'text-blue-800 bg-blue-100'
-                  : 'text-gray-700  hover:text-gray-600'
+                ? 'text-blue-800 bg-blue-100'
+                : 'text-gray-700  hover:text-gray-600'
                 }`}
             >
               All Tasks
@@ -290,7 +347,7 @@ const AdminDashboard: React.FC = () => {
               className={`h-fit px-3 py-1 font-medium transition-colors rounded-lg duration-200 ${activeTab === 'archived-tasks'
                 ? 'text-blue-800 bg-blue-100'
                 : 'text-gray-700  hover:text-gray-600'
-              }`}
+                }`}
             >
               Archived Tasks
             </button>
@@ -393,8 +450,10 @@ const AdminDashboard: React.FC = () => {
                         View
                       </span>
 
-                      <span className="w-6 h-6 flex justify-center items-center bg-red-200 rounded-full text-xs text-white cursor-pointer hover:text-white">
-                        <Trash2 size={14} className="text-red-800 hover:text-white" />
+                      <span className="w-6 h-6 flex justify-center items-center bg-red-200 rounded-full text-xs text-white cursor-pointer hover:text-white"
+                        onClick={() => handleDeleteTask(task.taskId)}
+                      >
+                        <Trash2 size={14} className="text-red-600 hover:text-white" />
                       </span>
 
                     </td>
@@ -410,6 +469,7 @@ const AdminDashboard: React.FC = () => {
       <BulkActionsDialog />
       <ArchiveDialog />
       <ReassignDialog />
+      <DeleteDialog />
 
       <TaskDetailPopup
         isPopupOpen={isPopupOpen}

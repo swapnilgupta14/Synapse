@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   X,
   CalendarDays,
@@ -9,22 +10,24 @@ import {
   Hash,
   FileText,
   UserCheck
-} from 'lucide-react'; import { useSelector } from 'react-redux';
+} from 'lucide-react';
+import { useSelector } from 'react-redux';
 import { RootState, Task } from '../../types';
 
 type PropTypes = {
-  isPopupOpen?: Boolean,
+  isPopupOpen?: boolean;
   onClose: () => void;
-  taskId: number
+  taskId: number;
 }
 
-const TaskDetailPopup = ({ onClose, taskId }: PropTypes) => {
-  if (taskId === 0) return;
+const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
+  if (taskId === 0) return null;
+
   const tasks = useSelector((state: RootState) => state.tasks);
   const taskArr: Task[] = (tasks as any).tasks;
   const task = taskArr.find(t => t.taskId === taskId);
 
-  if(!task) return;
+  if (!task) return null;
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
