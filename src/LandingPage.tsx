@@ -39,8 +39,6 @@ const LandingPage: React.FC = () => {
   const [quickLinks, setQuickLinks] = useState<QuickLinkSection[]>([]);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
 
-  set
-
   const icons: LucideIcon[] = [
     CheckCircle,
     Layers,
