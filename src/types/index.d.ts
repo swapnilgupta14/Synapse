@@ -78,6 +78,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
   currentOrganisation?: Organisation | null;
+  isOrganisation: boolean;
 }
 
 export interface TaskState {

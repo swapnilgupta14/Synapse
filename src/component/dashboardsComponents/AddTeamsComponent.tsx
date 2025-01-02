@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Plus, X } from 'lucide-react';
-import { addTeam, updateTeam } from '../../redux/reducers/teamsSlice';
-import { RootState } from '../../redux/store';
-import { Team } from '../../types';
+import { Team, Project } from '../../types';
+import { createTeam, updateTeam } from '../../api/teamServices';
+import { getProjects } from '../../api/projectServices';
 
 interface AddTeamsComponentProps {
     isEditing?: boolean;
@@ -16,14 +15,13 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
     existingTeam,
     onClose
 }) => {
-    const dispatch = useDispatch();
-    const projects = useSelector((state: RootState) => state.projects.projects);
     const [isOpen, setIsOpen] = useState(false);
-
     const [teamName, setTeamName] = useState('');
     const [projectId, setProjectId] = useState(0);
     const [description, setDescription] = useState('');
     const [teamManagerId, setTeamManagerId] = useState(0);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (isEditing && existingTeam) {
@@ -35,7 +33,24 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
         }
     }, [isEditing, existingTeam]);
 
-    const handleSubmit = () => {
+    useEffect(() => {
+        const fetchProjectsList = async () => {
+            try {
+                setLoading(true);
+                const projectsData = await getProjects();
+                setProjects(projectsData);
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+                alert('Failed to load projects');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjectsList();
+    }, []);
+
+    const handleSubmit = async () => {
         if (!teamName.trim()) {
             alert('Team name is required');
             return;
@@ -46,27 +61,32 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
             return;
         }
 
-        if (isEditing && existingTeam) {
-            dispatch(updateTeam({
-                teamId: existingTeam.teamId,
-                name: teamName,
-                projectId,
-                description: description || undefined,
-                teamManagerId
-            }));
-        } else {
-            dispatch(addTeam({
-                teamId: Date.now(),
-                name: teamName,
-                projectId,
-                description: description || undefined,
-                teamManagerId
-            }));
-        }
+        try {
+            if (isEditing && existingTeam) {
+                await updateTeam(existingTeam.teamId, {
+                    name: teamName,
+                    projectId,
+                    description: description || undefined,
+                    teamManagerId
+                });
+            } else {
+                await createTeam({
+                    name: teamName,
+                    projectId,
+                    description: description || undefined,
+                    teamManagerId,
+                    members: [],
+                    createdAt: new Date().toISOString()
+                });
+            }
 
-        resetForm();
-        setIsOpen(false);
-        onClose && onClose();
+            resetForm();
+            setIsOpen(false);
+            onClose && onClose();
+        } catch (error) {
+            console.error('Error handling team:', error);
+            alert('Failed to save team');
+        }
     };
 
     const resetForm = () => {
@@ -140,20 +160,25 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                                     Project
                                 </label>
                                 <select
+                                    id="project"
                                     value={projectId}
                                     onChange={(e) => setProjectId(Number(e.target.value))}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                                    disabled={loading}
                                 >
                                     <option value="0">Select a project</option>
                                     {projects.map((project) => (
                                         <option
-                                            key={project.projectId}
-                                            value={project.projectId}
+                                            key={project.projectId || project.projectId}
+                                            value={project.projectId || project.projectId}
                                         >
                                             {project.name}
                                         </option>
                                     ))}
                                 </select>
+                                {loading && (
+                                    <p className="text-sm text-gray-500 mt-1">Loading projects...</p>
+                                )}
                             </div>
 
                             <div>

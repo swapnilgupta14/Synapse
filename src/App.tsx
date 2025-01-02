@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import {
     BrowserRouter as Router,
     Routes,
@@ -6,27 +6,24 @@ import {
     Navigate,
     useNavigate
 } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { store, useAppSelector } from './redux/store';
+import { useAppDispatch, useAppSelector } from './redux/store';
+import { verifyOrgToken, verifyToken } from './api/fetch';
+import { login, logout } from './redux/reducers/authSlice';
+import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './components/LoadingSpinner';
+import { adminRoutes } from './routes/adminRoutes';
+import { organisationRoutes } from './routes/organisationRoutes';
+import { preloadRoute } from './utils/preload';
+import ProtectedRoute from './components/ProtectedRoute';
+import { ProjectProvider } from './context/ProjectContext';
+import { TeamProvider } from './context/TeamContext';
+import { AuthProvider } from './context/AuthContext';
+import { Organisation, User } from './types';
 
-import Dashboard from './pages/dashboard';
-import Auth from './pages/auth';
-import LandingPage from './LandingPage';
-import ProtectedRoute from './ProtectedRoute';
-
-import AdminDashboard from './pages/dashboards/AdminDashboard';
-import AllTasks from './pages/dashboards/AdminDashboard/allTasks';
-import AllProjects from './pages/dashboards/AdminDashboard/allProjects';
-import AllUsers from './pages/dashboards/AdminDashboard/allUsers';
-import Analytics from './pages/dashboards/AdminDashboard/analytics';
-import AllTeams from './pages/dashboards/AdminDashboard/allTeams';
-
-import UserDashboard from './pages/dashboards/UserDashboard';
-import OrganisationDashboard from './pages/dashboards/OrganisationDashboard';
-
-import { User } from './types';
-import OrganizationHierarchyPage from "./pages/dashboards/OrganisationDashboard/Hierarchy";
-import CreateProject from './pages/dashboards/OrganisationDashboard/CreateProject';
+const LandingPage = lazy(() => import('./LandingPage'));
+const Auth = lazy(() => import('./pages/auth'));
+const Dashboard = lazy(() => import('./pages/dashboard'));
+const UserDashboard = lazy(() => import('./pages/dashboards/UserDashboard'));
 
 const DashboardRedirect: React.FC = () => {
     const { user } = useAppSelector((state) => state.auth);
@@ -34,16 +31,19 @@ const DashboardRedirect: React.FC = () => {
 
     useEffect(() => {
         if (user) {
-            switch (user.role) {
-                case 'Admin':
-                    navigate('/dashboard/admin/tasks', { replace: true });
-                    break;
-                case 'Organisation':
-                    navigate('/dashboard/organisation', { replace: true });
-                    break;
-                default:
-                    navigate('/dashboard/user', { replace: true });
-            }
+            const route = (() => {
+                switch (user.role) {
+                    case 'Admin':
+                        setTimeout(() => preloadRoute('/dashboard/admin'), 100);
+                        return '/dashboard/admin/tasks';
+                    case 'Organisation':
+                        setTimeout(() => preloadRoute('/dashboard/organisation'), 100);
+                        return '/dashboard/organisation';
+                    default:
+                        return '/dashboard/user';
+                }
+            })();
+            navigate(route, { replace: true });
         }
     }, [user, navigate]);
 
@@ -51,61 +51,93 @@ const DashboardRedirect: React.FC = () => {
 };
 
 const App: React.FC = () => {
+    const dispatch = useAppDispatch();
+
     useEffect(() => {
-        const adminExists = JSON.parse(localStorage.getItem('SignedUpUsers') || '[]').find(
-            (user: User) => user.username === 'admin'
-        );
-        if (!adminExists) {
-            const adminUser: User = {
-                id: 1,
-                username: 'admin',
-                password: 'admin12',
-                role: 'Admin',
-                email: 'admin@gmail.com',
-                token: '',
-                createdAt: new Date().toISOString(),
-            };
+        const initAuth = async () => {
+            const storedUser = localStorage.getItem('user');
 
-            const existingUsers = JSON.parse(localStorage.getItem('SignedUpUsers') || '[]');
-            localStorage.setItem(
-                'SignedUpUsers',
-                JSON.stringify([...existingUsers, adminUser])
-            );
-        }
-    }, []);
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
 
-    const allowedRoles = ["Admin", "Organisation", "Project Manager", "Team Manager", "Team Member"];
+
+                    let userOrOrg: User | Organisation;
+
+                    const parsedUser: User | Organisation = storedUser ? JSON.parse(storedUser) : null;
+
+                    if (parsedUser?.role === 'Organisation') {
+                        userOrOrg = await verifyOrgToken(token);
+                    } else {
+                        userOrOrg = await verifyToken(token);
+                    }
+
+                    console.log('userOrOrg 63', userOrOrg);
+
+                    if (userOrOrg) {
+                        dispatch(login({ user: userOrOrg, token, isOrganisation: userOrOrg.role === 'Organisation' }));
+                    } else {
+                        dispatch(logout());
+                    }
+
+                } catch (error) {
+                    console.error('Auth initialization failed:', error);
+                    dispatch(logout());
+                }
+            }
+        };
+
+        initAuth();
+    }, [dispatch]);
 
     return (
-        <Provider store={store}>
-            <Router>
-                <Routes>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route element={<ProtectedRoute allowedRoles={allowedRoles} />}>
-                        <Route path="/dashboard" element={<Dashboard />}>
-                            <Route index element={<DashboardRedirect />} />
-
-                            <Route path="admin" element={<AdminDashboard />}>
-                                <Route path="tasks" element={<AllTasks />} />
-                                <Route path="projects" element={<AllProjects />} />
-                                <Route path="users" element={<AllUsers />} />
-                                <Route path="analytics" element={<Analytics />} />
-                                <Route path="teams" element={<AllTeams />} />
-                            </Route>
-
-                            <Route path="organisation" element={<OrganisationDashboard />}>
-                                <Route path="createProject" element={<CreateProject />} />
-                                <Route path="hierarchy" element={<OrganizationHierarchyPage />} />
-                            </Route>
-
-                            <Route path="user" element={<UserDashboard />} />
-                        </Route>
-                    </Route>
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </Router>
-        </Provider>
+        <ErrorBoundary>
+            <AuthProvider>
+                <ProjectProvider>
+                    <TeamProvider>
+                        <Router>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Routes>
+                                    <Route path="/" element={<LandingPage />} />
+                                    <Route path="/auth" element={<Auth />} />
+                                    <Route
+                                        element={
+                                            <ProtectedRoute
+                                                allowedRoles={["Admin", "Organisation", "Project Manager", "Team Manager", "Team Member"]}
+                                            />
+                                        }
+                                    >
+                                        <Route path="/dashboard" element={<Dashboard />}>
+                                            <Route index element={<DashboardRedirect />} />
+                                            <Route path="admin">
+                                                {adminRoutes.children?.map((route) => (
+                                                    <Route
+                                                        key={route.path}
+                                                        path={route.path}
+                                                        element={route.element}
+                                                    />
+                                                ))}
+                                            </Route>
+                                            <Route path="organisation">
+                                                {organisationRoutes.children?.map((route) => (
+                                                    <Route
+                                                        key={route.path}
+                                                        path={route.path}
+                                                        element={route.element}
+                                                    />
+                                                ))}
+                                            </Route>
+                                            <Route path="user" element={<UserDashboard />} />
+                                        </Route>
+                                    </Route>
+                                    <Route path="*" element={<Navigate to="/" replace />} />
+                                </Routes>
+                            </Suspense>
+                        </Router>
+                    </TeamProvider>
+                </ProjectProvider>
+            </AuthProvider>
+        </ErrorBoundary>
     );
 };
 

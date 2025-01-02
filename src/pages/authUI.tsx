@@ -182,21 +182,6 @@ export const AuthUI: React.FC<AuthUIProps> = ({
                         </p>
                     )}
                 </div>
-
-                {/* <div className="text-center mt-1">
-                    {isSignup && isOrganisation ? (
-                        null
-                    ) : (
-                        <p className="text-black text-sm hover:underline cursor-pointer"
-                            onClick={() => {
-                                setIsSignup(false);
-                                navigate('/auth?mode=signup')
-                            }}
-                        >
-                            Create Organisation Account! {' '}
-                        </p>
-                    )}
-                </div> */}
             </div>
         </div>
     );

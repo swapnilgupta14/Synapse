@@ -10,7 +10,7 @@ import { RootState, Task } from '../../../types';
 import { useAppSelector } from '../../../redux/store';
 import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
 import { User } from '../../../types';
-import { Trash2, Archive, Users, AlertTriangle, X, LogOut, Trash } from 'lucide-react';
+import { Trash2, Archive, AlertTriangle, X, LogOut, Trash } from 'lucide-react';
 
 import { logout } from '../../../redux/reducers/authSlice';
 import ProfilePopup from '../../../component/popups/ProfilePopup';

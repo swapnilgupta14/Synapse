@@ -1,40 +1,36 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User, AuthState } from '../../types';
-import { loadFromLocalStorage } from "../../utils/localStorage";
-const savedToken = localStorage.getItem('token');
 
 const initialState: AuthState = {
-  user: JSON.parse(localStorage.getItem('userCurrent') || 'null'),
-  isAuthenticated: !!savedToken,
-  token: savedToken || null,
+  user: null,
+  isAuthenticated: false,
+  token: localStorage.getItem('token') || null,
+  isOrganisation: localStorage.getItem('isOrganisation') === 'true',
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<{ user: Omit<User, "email">; token: string }>) => {
-      const signedUpUsers: User[] = loadFromLocalStorage("SignedUpUsers", []);
-      const extractUser = signedUpUsers.find((it: User) => it.id === action.payload.user.id);
-      const userWithEmail = {
-        ...action.payload.user,
-        email: extractUser?.email || "",
-      };
-
-      state.user = userWithEmail;
+    login: (state, action: PayloadAction<{ user: User; token: string; isOrganisation: boolean }>) => {
+      state.user = action.payload.user;
       state.isAuthenticated = true;
       state.token = action.payload.token;
-
-      localStorage.setItem("userCurrent", JSON.stringify(userWithEmail));
-      localStorage.setItem("token", action.payload.token);
+      state.isOrganisation = action.payload.isOrganisation;
+      
+      // localStorage.setItem('token', action.payload.token);
+      // localStorage.setItem('isOrganisation', String(action.payload.isOrganisation));
+      // localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
-
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.token = null;
-      localStorage.removeItem('userCurrent');
+      state.isOrganisation = false;
+      
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('isOrganisation');
     },
   },
 });

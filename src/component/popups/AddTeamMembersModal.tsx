@@ -4,6 +4,7 @@ import { Organisation, User } from '../../types';
 // import { updateUserTeam } from '../../redux/userSlice';
 import { Plus, Search, X } from 'lucide-react';
 import { updateTeam } from '../../redux/reducers/teamsSlice';
+import { addTeamMember, removeTeamMember } from '../../api/teamServices';
 
 const AddTeamMembersModal: React.FC<{
     teamId: number;
@@ -37,52 +38,30 @@ const AddTeamMembersModal: React.FC<{
 
     const filteredUsers = filteredUsers_1.filter((it) => it?.organisationId === currentOrg?.id);
 
-    const handleAddMember = (user: User) => {
+    const handleAddMember = async (user: User) => {
         if (user?.role === "Admin") {
             console.error("Admins cannot be added to teams.");
             return;
         }
 
-        const newMember: User = { ...user };
-        const updatedMembers = [...(currentTeam?.members || []), newMember];
-
-        const signedUpUsers: User[] = JSON.parse(localStorage.getItem("SignedUpUsers") || "[]");
-        const updatedUsers = signedUpUsers.map((u: User) => {
-            if (u.id === user.id) {
-                const updatedTeamIds = Array.isArray(u.teamId) ? [...u.teamId, teamId] : [teamId];
-                return { ...u, teamId: updatedTeamIds };
-            }
-            return u;
-        });
-
-        localStorage.setItem("SignedUpUsers", JSON.stringify(updatedUsers));
-        dispatch(updateTeam({ teamId, projectId: currentTeam?.projectId, members: updatedMembers, name: currentTeam?.name }));
-        setSelectedMembers((prev) => [...prev, newMember]);
+        try {
+            await addTeamMember(teamId, user);
+            setSelectedMembers(prev => [...prev, user]);
+        } catch (error) {
+            console.error('Error adding team member:', error);
+            alert('Failed to add team member');
+        }
     };
 
-
-    const handleRemoveMember = (userId: number) => {
-        const updatedMembers =
-            currentTeam?.members.filter((member) => member.id !== userId) || [];
-
-        const signedUpUsers: User[] = JSON.parse(localStorage.getItem("SignedUpUsers") || "[]");
-        const updatedUsers = signedUpUsers.map((u: User) => {
-            if (u.id === userId) {
-                const updatedTeamIds = Array.isArray(u.teamId)
-                    ? u.teamId.filter((id) => id !== teamId)
-                    : [];
-                return { ...u, teamId: updatedTeamIds };
-            }
-            return u;
-        });
-
-        localStorage.setItem("SignedUpUsers", JSON.stringify(updatedUsers));
-        dispatch(updateTeam({ teamId, projectId: currentTeam?.projectId, members: updatedMembers, name: currentTeam?.name }));
-        setSelectedMembers((prev) => prev.filter((member) => member.id !== userId));
+    const handleRemoveMember = async (userId: number) => {
+        try {
+            await removeTeamMember(teamId, userId);
+            setSelectedMembers(prev => prev.filter(member => member.id !== userId));
+        } catch (error) {
+            console.error('Error removing team member:', error);
+            alert('Failed to remove team member');
+        }
     };
-
-
-
 
     const handleToggleRole = (memberId: number) => {
         const teamManagerExists = currentTeam?.members.some(
@@ -145,8 +124,6 @@ const AddTeamMembersModal: React.FC<{
             name: currentTeam?.name
         }));
     };
-
-
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

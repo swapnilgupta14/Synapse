@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { useAppSelector, useAppDispatch } from "../../redux/store";
-import {
-    addProject,
-    deleteProject
-} from "../../redux/reducers/projectsSlice";
+import { useProjects } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
 import {
     Folder,
     Plus,
@@ -17,25 +14,10 @@ import { Project } from '../../types';
 import ProjectDetailsView from './ProjectDetailsView';
 
 const ProjectsComponent: React.FC = () => {
-    const dispatch = useAppDispatch();
+    const { projects, createProject, deleteProject, loading } = useProjects();
+    const { user } = useAuth();
+
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-    const { user } = useAppSelector((state) => state.auth);
-
-    const orgs = localStorage.getItem("SignedUpOrgs");
-    const userCurrent = localStorage.getItem("userCurrent");
-
-    if (!orgs || !userCurrent) return;
-
-    // const orgsParsed = JSON.parse(orgs);
-    const parsedUserCurrent = JSON.parse(userCurrent);
-
-    // const organisation = orgsParsed.filter((o: Organisation) => o.id === parsedUserCurrent.id);
-
-    const projects = useAppSelector((state) =>
-        state.projects.projects.filter(
-            project => project.organisationId === parsedUserCurrent?.id
-        )
-    );
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newProject, setNewProject] = useState({
@@ -45,17 +27,20 @@ const ProjectsComponent: React.FC = () => {
         endDate: ''
     });
 
-    const handleCreateProject = () => {
-        if (!newProject.name || !parsedUserCurrent.id) return;
+    const handleCreateProject = async () => {
+        if (!newProject.name || !user?.organisationId) return;
 
-        dispatch(addProject({
+        await createProject({
             name: newProject.name,
             description: newProject.description,
-            organisationId: parsedUserCurrent.id,
-            projectManagerId: user?.id || 0,
+            organisationId: user.organisationId,
+            projectManagerId: user.id || 0,
             startDate: newProject.startDate,
-            endDate: newProject.endDate
-        }));
+            endDate: newProject.endDate,
+            status: 'planning',
+            teams: [],
+            createdAt: new Date().toISOString()
+        });
 
         setNewProject({
             name: '',
@@ -66,9 +51,13 @@ const ProjectsComponent: React.FC = () => {
         setIsModalOpen(false);
     };
 
-    const handleDeleteProject = (projectId: number) => {
-        dispatch(deleteProject(projectId));
+    const handleDeleteProject = async (projectId: number) => {
+        await deleteProject(projectId);
     };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="bg-white shadow-md rounded-lg p-6 h-full flex-1">

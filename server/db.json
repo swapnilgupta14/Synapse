@@ -1,83 +1,134 @@
 {
-    "features": [
-        {
-            "icon": "CheckCircle",
-            "title": "Comprehensive Task Management",
-            "color": "bg-pink-100",
-            "description": "Create, assign, and track tasks with priority levels, deadlines, and dependencies. Easily manage personal and team tasks."
-        },
-        {
-            "icon": "Layers",
-            "title": "Multi-Organization Support",
-            "color": "bg-green-100",
-            "description": "Manage multiple organizations and teams under one account. Flexible task management across different departments."
-        },
-        {
-            "icon": "Calendar",
-            "title": "Flexible Dashboard",
-            "color": "bg-red-100",
-            "description": "Intuitive 3-day rolling dashboard with drag-and-drop functionality. Switch between day and calendar views effortlessly."
-        },
-        {
-            "icon": "Lock",
-            "title": "Role-Based Access Control",
-            "color": "bg-yellow-100",
-            "description": "Granular permission system with roles like Admin, Project Manager, Team Lead, and Member. Secure and controlled task access."
-        },
-        {
-            "icon": "MessageCircle",
-            "title": "Collaborative Communication",
-            "color": "bg-orange-100",
-            "description": "In-task commenting with @mentions, rich text editing, file attachments, and comment threads for seamless team collaboration."
-        },
-        {
-            "icon": "Share2",
-            "title": "Team and Project Management",
-            "color": "bg-cyan-100",
-            "description": "Create teams, assign leads, manage members, and oversee project progress with intuitive team management tools."
-        }
-    ],
-    "quickLinks": [
-        {
-            "title": "Product",
-            "links": [
-                "Features",
-                "Pricing",
-                "Integrations"
-            ]
-        },
-        {
-            "title": "Company",
-            "links": [
-                "About",
-                "Careers",
-                "Press"
-            ]
-        },
-        {
-            "title": "Resources",
-            "links": [
-                "Blog",
-                "Help Center",
-                "Documentation"
-            ]
-        }
-    ],
-    "socialLinks": [
-        {
-            "icon": "Twitter",
-            "href": "#",
-            "name": "Twitter"
-        },
-        {
-            "icon": "LinkedIn",
-            "href": "#",
-            "name": "LinkedIn"
-        },
-        {
-            "icon": "GitHub",
-            "href": "#",
-            "name": "GitHub"
-        }
-    ]
+  "image": {
+    "image1": "https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850133/austin-chan-ukzHlkoz1IE-unsplash_erlf82.jpg",
+    "image2": "https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850133/georgie-cobbs-muOHbrFGEQY-unsplash_srkxsc.jpg",
+    "image3": "https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850133/my-profit-tutor-ZfRWq1bRisE-unsplash_gmmrye.jpg",
+    "image4": "https://res.cloudinary.com/dml6gxfmn/image/upload/v1735849601/authImage_seuq1p.jpg",
+    "image5": "https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850134/behnam-norouzi-GAgEfSQMPa4-unsplash_uqwnej.jpg"
+  },
+  "features": [
+    {
+      "icon": "CheckCircle",
+      "title": "Comprehensive Task Management",
+      "color": "bg-pink-100",
+      "description": "Create, assign, and track tasks with priority levels, deadlines, and dependencies. Easily manage personal and team tasks.",
+      "id": "943c"
+    },
+    {
+      "icon": "Layers",
+      "title": "Multi-Organization Support",
+      "color": "bg-green-100",
+      "description": "Manage multiple organizations and teams under one account. Flexible task management across different departments.",
+      "id": "547f"
+    },
+    {
+      "icon": "Calendar",
+      "title": "Flexible Dashboard",
+      "color": "bg-red-100",
+      "description": "Intuitive 3-day rolling dashboard with drag-and-drop functionality. Switch between day and calendar views effortlessly.",
+      "id": "f3cc"
+    },
+    {
+      "icon": "Lock",
+      "title": "Role-Based Access Control",
+      "color": "bg-yellow-100",
+      "description": "Granular permission system with roles like Admin, Project Manager, Team Lead, and Member. Secure and controlled task access.",
+      "id": "3b8b"
+    },
+    {
+      "icon": "MessageCircle",
+      "title": "Collaborative Communication",
+      "color": "bg-orange-100",
+      "description": "In-task commenting with @mentions, rich text editing, file attachments, and comment threads for seamless team collaboration.",
+      "id": "fb19"
+    },
+    {
+      "icon": "Share2",
+      "title": "Team and Project Management",
+      "color": "bg-cyan-100",
+      "description": "Create teams, assign leads, manage members, and oversee project progress with intuitive team management tools.",
+      "id": "73d3"
+    }
+  ],
+  "quickLinks": [
+    {
+      "title": "Product",
+      "links": [
+        "Features",
+        "Pricing",
+        "Integrations"
+      ],
+      "id": "6bd4"
+    },
+    {
+      "title": "Company",
+      "links": [
+        "About",
+        "Careers",
+        "Press"
+      ],
+      "id": "cc16"
+    },
+    {
+      "title": "Resources",
+      "links": [
+        "Blog",
+        "Help Center",
+        "Documentation"
+      ],
+      "id": "6f7f"
+    }
+  ],
+  "socialLinks": [
+    {
+      "name": "Twitter",
+      "href": "#",
+      "id": "588a"
+    },
+    {
+      "name": "LinkedIn",
+      "href": "#",
+      "id": "9669"
+    },
+    {
+      "name": "GitHub",
+      "href": "#",
+      "id": "0443"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "email": "admin@taskflow.com",
+      "password": "admin123",
+      "role": "Admin",
+      "token": "admin-token-123",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 1735846993597,
+      "username": "swapnil",
+      "email": "swapnil@gmail.com",
+      "password": "swapnil",
+      "role": "Team Member",
+      "token": "1735846993597-6b6prjhay",
+      "createdAt": "2025-01-02T19:43:13.597Z"
+    }
+  ],
+  "organisations": [
+    {
+      "id": "1c2e",
+      "organisationId": 1735847130758,
+      "ownerId": 1735847130758,
+      "username": "taskify",
+      "email": "taskify@gmail.com",
+      "role": "Organisation",
+      "token": "1735847130758-hzjc1lqhr",
+      "createdAt": "2025-01-02T19:45:30.758Z",
+      "password": "taskify"
+    }
+  ],
+  "projects": [],
+  "teams": []
 }
