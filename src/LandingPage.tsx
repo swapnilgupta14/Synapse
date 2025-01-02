@@ -1,4 +1,4 @@
-import React, {useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, Clock } from "lucide-react";
 import {
@@ -15,8 +15,8 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { fetchFeatures, fetchQuickLinks, fetchSocialLinks } from "./api/fetch";
 
-// Define interfaces for data structures
 interface Feature {
   title: string;
   description: string;
@@ -61,6 +61,25 @@ const LandingPage: React.FC = () => {
 
   const currentYear = new Date().getFullYear();
 
+  const loadData = async (): Promise<void> => {
+    try {
+      const [featuresData, quickLinksData, socialLinksData] = await Promise.all(
+        [fetchFeatures(), fetchQuickLinks(), fetchSocialLinks()]
+      );
+
+      setFeatures(featuresData);
+      setQuickLinks(quickLinksData);
+      setSocialLinks(socialLinksData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Add new state for mobile menu
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
