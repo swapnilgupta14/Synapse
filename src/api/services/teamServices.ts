@@ -1,5 +1,5 @@
-import axiosInstance from './axiosInstance';
-import { Team, User } from '../types';
+import axiosInstance from '../axiosInstance';
+import { Team, User } from '../../types';
 
 export const createTeam = async (teamData: Omit<Team, "teamId">) => {
     try {

@@ -3,7 +3,7 @@ export * from "./typesDefinition/task";
 export * from "./typesDefinition/project";
 export * from "./typesDefinition/team";
 export * from "./typesDefinition/auth";
-export * from "./typesDefinition/payloads";
+export * from "./typesDefinition/payload";
 
 export interface DashboardContentProps {
   tasks: Task[];

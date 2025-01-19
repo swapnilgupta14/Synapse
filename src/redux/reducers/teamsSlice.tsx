@@ -64,7 +64,7 @@ const teamsSlice = createSlice({
             const teamIndex = state.teams.findIndex(t => t.teamId === action.payload.teamId);
             if (teamIndex !== -1) {
                 const team = state.teams[teamIndex];
-                if (!team.members.some(m => m.id === action.payload.user.id)) {
+                if (!team.members.some((m: User) => m.id === action.payload.user.id)) {
                     team.members.push(action.payload.user);
                     saveToLocalStorage('teams', state.teams);
                 }
@@ -74,7 +74,7 @@ const teamsSlice = createSlice({
             const teamIndex = state.teams.findIndex(t => t.teamId === action.payload.teamId);
             if (teamIndex !== -1) {
                 state.teams[teamIndex].members = state.teams[teamIndex].members
-                    .filter(member => member.id !== action.payload.userId);
+                    .filter((member: User) => member.id !== action.payload.userId);
                 saveToLocalStorage('teams', state.teams);
             }
         }
