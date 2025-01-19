@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { loadFromLocalStorage } from "../../../utils/localStorage";
 import { Team, User } from "../../../types";
-import TeamCard from "../../../component/ui/TeamCard";
-import TeamDetailsPopup from "../../../component/popups/TeamDetailPopup";
+import TeamCard from "../../../components/ui/TeamCard";
+import TeamDetailsPopup from "../../../components/popups/TeamDetailPopup";
 
 const AllTeams: React.FC = () => {
   const [allTeams, setAllTeams] = useState<Team[]>([]);

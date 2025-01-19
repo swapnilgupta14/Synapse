@@ -15,6 +15,14 @@ export interface User {
   teamId?: number[];
 }
 
+export interface Organisation extends User {
+  organisationId: number;
+  description?: string;
+  ownerId: number;
+  members?: User[];
+  location?: string;
+}
+
 export interface Task {
   taskId: number;
   title: string;
@@ -41,14 +49,6 @@ export type RoleType =
   | "Team Manager"
   | "Team Member";
 
-export interface Organisation extends User {
-  organisationId: number;
-  description?: string;
-  ownerId: number;
-  members?: User[];
-  location?: string;
-}
-
 export interface Project {
   projectId: number;
   name: string;
@@ -71,7 +71,6 @@ export interface Team {
   createdAt: string;
   description?: string;
 }
-
 
 export interface AuthState {
   user: User | null;

@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Search, Grid, List, Plus, Clock, Tag, Flag, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { ClipboardList, LogOut } from "lucide-react"
-import ProfilePopup from '../../../component/popups/ProfilePopup';
-import TeamCard from '../../../component/ui/TeamCard';
+import ProfilePopup from '../../../components/popups/ProfilePopup';
+import TeamCard from '../../../components/ui/TeamCard';
 
 import { useAppSelector, useAppDispatch } from '../../../redux/store';
 import {
@@ -13,9 +13,9 @@ import {
 import { Task, Team, User } from '../../../types';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../../redux/reducers/authSlice';
-import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
-import StatCard from '../../../component/ui/StatCard';
-import TeamDetailsPopup from '../../../component/popups/TeamDetailPopup';
+import TaskDetailPopup from '../../../components/popups/TaskDetailPopup';
+import StatCard from '../../../components/ui/StatCard';
+import TeamDetailsPopup from '../../../components/popups/TeamDetailPopup';
 import { loadFromLocalStorage } from '../../../utils/localStorage';
 
 type selectedMember = User | null;

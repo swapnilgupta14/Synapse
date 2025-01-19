@@ -1,6 +1,6 @@
 // import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 // import { vi, describe, it, expect, beforeEach } from 'vitest';
-// import AddTaskModal from '../component/popups/'; // Adjust import path
+// import AddTaskModal from '../components/popups/'; // Adjust import path
 // import { addTask } from './taskSlice'; // Adjust import path
 
 // // Mock dependencies

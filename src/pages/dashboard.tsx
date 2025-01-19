@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAppSelector } from '../redux/store';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import Sidebar from '../component/dashboardsComponents/Sidebar';
+import Sidebar from '../components/dashboardsComponents/Sidebar';
 
 const Dashboard: React.FC = () => {
     const { user } = useAppSelector((state) => state.auth);

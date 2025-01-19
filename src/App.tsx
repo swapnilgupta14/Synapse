@@ -7,8 +7,7 @@ import {
     useNavigate
 } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './redux/store';
-import { verifyOrgToken, verifyToken } from './api/fetch';
-import { login, logout } from './redux/reducers/authSlice';
+import { setCredentials, finishInitialLoad } from './redux/reducers/authSlice';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import { adminRoutes } from './routes/adminRoutes';
@@ -18,7 +17,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { ProjectProvider } from './context/ProjectContext';
 import { TeamProvider } from './context/TeamContext';
 import { AuthProvider } from './context/AuthContext';
-import { Organisation, User } from './types';
+import { verifyToken, verifyOrgToken } from './api/fetch';
 
 const LandingPage = lazy(() => import('./LandingPage'));
 const Auth = lazy(() => import('./pages/auth'));
@@ -47,48 +46,48 @@ const DashboardRedirect: React.FC = () => {
         }
     }, [user, navigate]);
 
-    return null;
+    return <LoadingSpinner />;
 };
 
 const App: React.FC = () => {
     const dispatch = useAppDispatch();
+    const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
 
     useEffect(() => {
         const initAuth = async () => {
-            const storedUser = localStorage.getItem('user');
-
             const token = localStorage.getItem('token');
-            if (token) {
+
+            if (token && !isAuthenticated) {
                 try {
+                    let user = await verifyToken(token);
 
-
-                    let userOrOrg: User | Organisation;
-
-                    const parsedUser: User | Organisation = storedUser ? JSON.parse(storedUser) : null;
-
-                    if (parsedUser?.role === 'Organisation') {
-                        userOrOrg = await verifyOrgToken(token);
-                    } else {
-                        userOrOrg = await verifyToken(token);
+                    if (!user) {
+                        user = await verifyOrgToken(token);
                     }
 
-                    console.log('userOrOrg 63', userOrOrg);
-
-                    if (userOrOrg) {
-                        dispatch(login({ user: userOrOrg, token, isOrganisation: userOrOrg.role === 'Organisation' }));
+                    if (user) {
+                        const { password, ...userWithoutPassword } = user;
+                        dispatch(setCredentials({ user: userWithoutPassword, token }));
                     } else {
-                        dispatch(logout());
+                        localStorage.removeItem('token');
+                        dispatch(finishInitialLoad());
                     }
-
                 } catch (error) {
                     console.error('Auth initialization failed:', error);
-                    dispatch(logout());
+                    localStorage.removeItem('token');
+                    dispatch(finishInitialLoad());
                 }
+            } else {
+                dispatch(finishInitialLoad());
             }
         };
 
         initAuth();
-    }, [dispatch]);
+    }, [dispatch, isAuthenticated]);
+
+    if (isLoading) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <ErrorBoundary>
@@ -99,7 +98,9 @@ const App: React.FC = () => {
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Routes>
                                     <Route path="/" element={<LandingPage />} />
-                                    <Route path="/auth" element={<Auth />} />
+                                    <Route path="/auth" element={
+                                        isAuthenticated ? <Navigate to="/dashboard" replace /> : <Auth />
+                                    } />
                                     <Route
                                         element={
                                             <ProtectedRoute

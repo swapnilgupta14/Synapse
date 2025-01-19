@@ -5,12 +5,12 @@ import { LogOut, Users, Trash2, Edit, Plus } from "lucide-react";
 import { Project, Team } from "../../../types";
 import { deleteTeam } from "../../../redux/reducers/teamsSlice";
 
-import AddMembersComponent from "../../../component/dashboardsComponents/AddMemberComponent";
-import ProjectsComponent from "../../../component/dashboardsComponents/ProjectComponent";
-import AddTeamsComponent from "../../../component/dashboardsComponents/AddTeamsComponent";
-import MembersPopup from "../../../component/popups/MemberPopup";
-import AddTeamMembersModal from "../../../component/popups/AddTeamMembersModal";
-import ProfilePopup from "../../../component/popups/ProfilePopup";
+import AddMembersComponent from "../../../components/dashboardsComponents/AddMemberComponent";
+import ProjectsComponent from "../../../components/dashboardsComponents/ProjectComponent";
+import AddTeamsComponent from "../../../components/dashboardsComponents/AddTeamsComponent";
+import MembersPopup from "../../../components/popups/MemberPopup";
+import AddTeamMembersModal from "../../../components/popups/AddTeamMembersModal";
+import ProfilePopup from "../../../components/popups/ProfilePopup";
 
 const CreateProject: React.FC = () => {
   const dispatch = useAppDispatch();

@@ -5,15 +5,15 @@ import { Outlet } from 'react-router-dom';
 import { archiveTasks, updateTaskPriorities, deleteTask } from '../../../redux/reducers/taskSlice';
 // import { archiveTasks, updateTaskPriorities, reassignTasks, deleteTask } from '../../../redux/reducers/taskSlice';
 
-import { Card, CardContent } from '../../../component/ui/Card';
+import { Card, CardContent } from '../../../components/ui/Card';
 import { RootState, Task } from '../../../types';
 import { useAppSelector } from '../../../redux/store';
-import TaskDetailPopup from '../../../component/popups/TaskDetailPopup';
+import TaskDetailPopup from '../../../components/popups/TaskDetailPopup';
 import { User } from '../../../types';
 import { Trash2, Archive, AlertTriangle, X, LogOut, Trash } from 'lucide-react';
 
 import { logout } from '../../../redux/reducers/authSlice';
-import ProfilePopup from '../../../component/popups/ProfilePopup';
+import ProfilePopup from '../../../components/popups/ProfilePopup';
 
 
 const AdminDashboard: React.FC = () => {

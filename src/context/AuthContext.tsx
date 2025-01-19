@@ -11,14 +11,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, isAuthenticated, isOrganisation } = useAppSelector((state) => state.auth);
-    
-    // useEffect(() => {
-    //     console.log('Auth state changed:', {
-    //         isAuthenticated,
-    //         isOrganisation,
-    //         hasUser: !!user
-    //     });
-    // }, [user, isAuthenticated, isOrganisation]);
 
     const value = {
         user,

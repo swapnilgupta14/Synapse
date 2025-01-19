@@ -1,186 +1,158 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Lock,
-    User as UserIcon,
-    Mail,
-    ArrowRight,
-    ArrowLeft
-} from 'lucide-react';
+import { Lock, User as UserIcon, Mail } from 'lucide-react';
+import Header from '../components/Header';
 
 interface AuthUIProps {
     isSignup: boolean;
-    username: string;
-    password: string;
-    email?: string;
-    isOrganisation?: Boolean,
-    setUsername: (username: string) => void;
-    setPassword: (password: string) => void;
-    setEmail?: (email: string) => void;
-    setIsSignup: (isSignup: boolean) => void;
-    onLogin: (e: React.FormEvent) => void;
-    onSignup: (e: React.FormEvent) => void;
+    formData: {
+        username: string;
+        password: string;
+        email: string;
+    };
+    setFormData: (data: any) => void;
+    onSubmit: (e: React.FormEvent) => void;
+    isOrganisation: boolean;
+    setIsSignup: (value: boolean) => void;
 }
 
 export const AuthUI: React.FC<AuthUIProps> = ({
     isSignup,
-    username,
-    password,
-    email = '',
-    setUsername,
-    setPassword,
-    setEmail,
-    setIsSignup,
-    onLogin,
-    onSignup,
-    isOrganisation
+    formData,
+    setFormData,
+    onSubmit,
+    isOrganisation,
+    setIsSignup
 }) => {
     const navigate = useNavigate();
 
-    const handleNavigateToLogin = () => navigate('/auth?mode=login');
-    const handleNavigateToOrgLogin = () => navigate('/auth?mode=login&role=organisation');
-    const handleNavigateToHome = () => navigate("/");
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 relative">
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            <Header darkMode={false} />
 
-            <div className='absolute top-4 left-4 flex gap-2 items-center justify-center cursor-pointer bg-blue-100 text-blue-700 py-1 px-2 hover:text-white hover:bg-black transition-all duration-300 rounded-3xl'
-            onClick={handleNavigateToHome}
-            >
-                <ArrowLeft className='w-4 h-4' />Back
-            </div>
-
-            <div className="bg-white px-12 py-6 rounded-xl shadow-lg w-full max-w-md">
-                <h2 className="text-3xl font-bold mb-2 text-center">
-                    {isOrganisation
-                        ? (isSignup ? 'Create Organization' : 'Welcome Organization')
-                        : (isSignup ? 'Create Account' : 'Welcome Back! User')}
-                </h2>
-                <p className="text-center text-gray-600 mb-8">
-                    {isSignup
-                        ? isOrganisation
-                            ? 'Sign up your organization to start managing tasks'
-                            : 'Sign up to start your journey'
-                        : 'Log in to continue!'}
-
-                    {!isOrganisation ? (
-                        <span className='font-medium cursor-pointer hover:underline text-black'
-                            onClick={handleNavigateToOrgLogin}
-                        >{" "}Are you an Organisation?</span>
-                    ) : <span className='font-medium cursor-pointer hover:underline text-black'
-                        onClick={handleNavigateToLogin}
-                    >{" "}Are you an User?</span>}
-
-                </p>
-
-                <form onSubmit={isSignup ? onSignup : onLogin} className="space-y-6">
-                    {isSignup && <div className="relative">
-                        <label htmlFor="email" className="sr-only">
-                            Email
-                        </label>
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Mail size={20} className="text-gray-400" />
+            <div className="flex-1 flex flex-col md:flex-row">
+                {/* Left Panel - Image Background */}
+                <div className="hidden md:block md:w-1/2 relative overflow-hidden">
+                    <img
+                        src="/authImage.webp"
+                        alt="Authentication"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                    <div className="absolute inset-0 flex items-center justify-center p-8">
+                        <div className="text-white space-y-6 max-w-lg text-center">
+                            <h1 className="text-5xl font-bold leading-tight">
+                                {isSignup ? 'Start Your Journey' : 'Welcome Back'}
+                            </h1>
+                            <p className="text-gray-200 text-lg">
+                                {isSignup
+                                    ? 'Join our platform and experience seamless task management.'
+                                    : 'Continue your productivity journey with us.'}
+                            </p>
                         </div>
-                        <input
-                            type="email"
-                            id="email"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail && setEmail(e.target.value)}
-                            className="w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                            required={isSignup}
-                        />
-                    </div>}
-
-                    <div className="relative">
-                        <label htmlFor="username" className="sr-only">
-                            {isOrganisation ? 'Organization Name' : 'Username'}
-                        </label>
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <UserIcon size={20} className="text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            id="username"
-                            placeholder={isOrganisation ? 'Organization Name' : 'Username'}
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            className="w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                            required
-                        />
                     </div>
+                </div>
 
-                    <div className="relative">
-                        <label htmlFor="password" className="sr-only">
-                            Password
-                        </label>
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock size={20} className="text-gray-400" />
-                        </div>
-                        <input
-                            type="password"
-                            id="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                            required
-                            minLength={6}
-                        />
-                    </div>
-
-                    {isOrganisation && isSignup && (
-                        <div className="relative">
-                            <label htmlFor="location" className="sr-only">
-                                Location
-                            </label>
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <UserIcon size={20} className="text-gray-400" />
+                {/* Right Panel - Form Section */}
+                <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+                    <div className="w-full max-w-md">
+                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+                            <div className="px-8 pt-8 pb-6 relative">
+                                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-black via-gray-700 to-gray-900" />
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                    {isSignup ? 'Create Account' : 'Sign In'}
+                                </h2>
+                                <p className="text-gray-600">
+                                    {isOrganisation ? 'Organisation Account' : 'User Account'}
+                                </p>
                             </div>
-                            <input
-                                type="text"
-                                id="location"
-                                placeholder="Organization Location (Optional)"
-                                className="w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                            />
+
+                            <div className="px-8 pb-8">
+                                <form onSubmit={onSubmit} className="space-y-5">
+                                    {/* Form inputs with enhanced styling */}
+                                    {isSignup && (
+                                        <div className="relative group">
+                                            <Mail className="absolute left-3 top-3 text-gray-400 group-focus-within:text-black transition-colors" size={20} />
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                placeholder="Email"
+                                                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 rounded-xl focus:border-black focus:bg-white focus:outline-none transition-all duration-300"
+                                                required
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="relative group">
+                                        <UserIcon className="absolute left-3 top-3 text-gray-400 group-focus-within:text-black transition-colors" size={20} />
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            value={formData.username}
+                                            onChange={handleChange}
+                                            placeholder="Username"
+                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 rounded-xl focus:border-black focus:bg-white focus:outline-none transition-all duration-300"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="relative group">
+                                        <Lock className="absolute left-3 top-3 text-gray-400 group-focus-within:text-black transition-colors" size={20} />
+                                        <input
+                                            type="password"
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            placeholder="Password"
+                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 rounded-xl focus:border-black focus:bg-white focus:outline-none transition-all duration-300"
+                                            required
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-black text-white py-3.5 rounded-xl hover:bg-gray-800 transform hover:scale-[0.99] transition-all duration-200 font-medium"
+                                    >
+                                        {isSignup ? 'Create Account' : 'Sign In'}
+                                    </button>
+                                </form>
+
+                                <div className="mt-6 space-y-4">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <div className="w-full border-t border-gray-200"></div>
+                                        </div>
+                                        <div className="relative flex justify-center text-sm">
+                                            <span className="px-2 bg-white text-gray-500">or</span>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setIsSignup(!isSignup)}
+                                        className="w-full text-gray-600 hover:text-black transition-colors text-sm"
+                                    >
+                                        {isSignup ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                                    </button>
+
+                                    <button
+                                        onClick={() => navigate(isOrganisation
+                                            ? '/auth?mode=' + (isSignup ? 'signup' : 'login')
+                                            : '/auth?mode=' + (isSignup ? 'signup' : 'login') + '&role=organisation'
+                                        )}
+                                        className="w-full text-gray-600 hover:text-black transition-colors text-sm"
+                                    >
+                                        {isOrganisation ? 'Switch to User Account' : 'Switch to Organisation Account'}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition duration-300 flex items-center justify-center"
-                    >
-                        {isSignup
-                            ? isOrganisation
-                                ? 'Sign Up Organization'
-                                : 'Sign Up'
-                            : 'Log In'}
-                        <ArrowRight size={20} className="ml-2" />
-                    </button>
-                </form>
-
-                <div className="text-center mt-6">
-                    {isSignup ? (
-                        <p className="text-gray-600">
-                            Already have an account?{' '}
-                            <button
-                                className="text-black hover:underline"
-                                onClick={() => setIsSignup(false)}
-                            >
-                                Log in
-                            </button>
-                        </p>
-                    ) : (
-                        <p className="text-gray-600">
-                            Don't have an account?{' '}
-                            <button
-                                className="text-black hover:underline"
-                                onClick={() => setIsSignup(true)}
-                            >
-                                Sign up
-                            </button>
-                        </p>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

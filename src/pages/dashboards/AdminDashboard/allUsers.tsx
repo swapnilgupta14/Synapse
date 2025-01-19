@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { loadFromLocalStorage } from "../../../utils/localStorage";
 import { Shield, Mail, Calendar } from "lucide-react";
 import { RoleType, User } from "../../../types";
-import ProfilePopup from "../../../component/popups/ProfilePopup";
+import ProfilePopup from "../../../components/popups/ProfilePopup";
 
 const UserAvatar = ({ username }: { username: string }) => {
 

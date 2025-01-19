@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Clock } from "lucide-react";
+import { Users, Clock, TimerIcon } from "lucide-react";
 import {
   CheckCircle,
   Layers,
@@ -16,6 +16,8 @@ import {
   X,
 } from "lucide-react";
 import { fetchFeatures, fetchQuickLinks, fetchSocialLinks } from "./api/fetch";
+import { Organisation } from './types/index';
+import FeatureCarousel from "./components/ui/FeatureCarousel";
 
 interface Feature {
   title: string;
@@ -49,8 +51,7 @@ const LandingPage: React.FC = () => {
   ];
 
   const navigateToLogin = () => handleNavigate("/auth?mode=login");
-  const navigateToSignupOrganization = () =>
-    handleNavigate("/auth?mode=signup&role=organisation");
+  const navigateToSignupOrganization = () => handleNavigate("/auth?mode=signup&role=organisation");
   const navigateToDemo = () => handleNavigate("/demo");
   const navigateToSignupUser = () => handleNavigate("/auth/?mode=signup");
 
@@ -79,22 +80,18 @@ const LandingPage: React.FC = () => {
     loadData();
   }, []);
 
-  // Add new state for mobile menu
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <header className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 py-4">
-          {/* Main header content */}
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <div className="flex items-center space-x-2">
               <span className="bg-black py-1 px-2 font-bold text-white rounded-2xl">Syn</span>
               <span className="text-2xl font-bold text-black">SYNAPSE.</span>
             </div>
 
-            {/* Desktop Navigation */}
             <div className="hidden sm:flex items-center space-x-6">
               <nav className="flex space-x-8 mr-8">
                 <a href="#features" className="text-gray-600 hover:text-black transition-colors">Features</a>
@@ -117,7 +114,6 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="sm:hidden p-2 rounded-lg hover:bg-gray-100"
@@ -130,7 +126,6 @@ const LandingPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Mobile Navigation */}
           {isMobileMenuOpen && (
             <div className="sm:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-100 z-50">
               <div className="container mx-auto px-4">
@@ -154,11 +149,10 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1">
-        <div className="container mx-auto px-4 sm:px-10 py-8 md:py-24">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-            {/* Hero Content */}
-            <div className="text-center md:text-left space-y-6 order-2 md:order-1">
+      <main className="flex-1 min-h-[90vh] flex items-center">
+        <div className="container mx-auto px-4 sm:px-10 py-8 md:py-20 overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center md:items-start ">
+            <div className="text-center md:text-left space-y-6 order-2 md:order-1 md:mt-5">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
                 Streamline Team Tasks, Boost Productivity
               </h1>
@@ -167,7 +161,6 @@ const LandingPage: React.FC = () => {
                 and track progress with intuitive, powerful tools.
               </p>
 
-              {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
                 <button
                   onClick={navigateToDemo}
@@ -183,24 +176,29 @@ const LandingPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 justify-center md:justify-start pt-6 text-gray-600">
-                <div className="flex items-center justify-center md:justify-start space-x-2">
+              <div className="flex flex-row gap-2 sm:gap-6 justify-center md:justify-start pt-6 text-gray-600">
+                <div className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2">
                   <Users className="text-gray-800" size={20} />
-                  <span>100+ Teams</span>
+                  <span className="text-center md:text-left">100+ Clients</span>
                 </div>
-                <div className="flex items-center justify-center md:justify-start space-x-2">
+                <div className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2">
+                  <TimerIcon className="text-gray-800" size={20} />
+                  <span className="text-center md:text-left">25% Increase in Efficiency</span>
+                </div>
+                <div className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2">
                   <Clock className="text-gray-800" size={20} />
-                  <span>Saves 10+ Hours Weekly</span>
+                  <span className="text-center md:text-left">Saves 10+ Hours Weekly</span>
                 </div>
               </div>
+
             </div>
 
             <div className="order-1 md:order-2">
-              <div className="bg-gray-950 rounded-2xl p-2 md:p-4 lg:p-4 shadow-2xl">
+              <div className="bg-gray-950 rounded-2xl p-2 md:p-3 lg:p-3 shadow-2xl md:w-[65vw]">
                 <img
                   src="/image.png"
                   alt="Taskify Dashboard"
-                  className="rounded-lg shadow-xl w-full h-auto"
+                  className="rounded-lg shadow-xl w-full h-auto object-cover"
                 />
               </div>
             </div>
@@ -208,11 +206,10 @@ const LandingPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Solution Overview */}
-      <section className="py-16 sm:py-20 px-4">
-        <div className="container mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+      <section className="py-16 sm:py-20 px-5">
+        <div className="container mx-auto max-w-full lg:max-w-full">
+          <div className="flex flex-col gap-12 items-center">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden w-full lg:w-[85%] h-[50vh]">
               <img
                 src="https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850133/my-profit-tutor-ZfRWq1bRisE-unsplash_gmmrye.jpg"
                 className="w-full h-full object-cover"
@@ -220,31 +217,33 @@ const LandingPage: React.FC = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
                 <div className="absolute bottom-0 p-6 sm:p-8 text-white">
-                  <h3 className="text-xl sm:text-2xl font-bold mb-2">
-                    Intuitive Interface
+                  <h3 className="text-xl sm:text-2xl font-bold">
+                    Migrate from Pen and Paper to Intuitive Interface
                   </h3>
                   <p>Designed for clarity and efficiency</p>
                 </div>
               </div>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-10 w-full lg:w-[85%]">
               <h2 className="text-4xl font-bold text-gray-900">
-                Meet Synapse: Your Team's Command Center
+                Meet Synapse: Your Organisation's Command Center
+
+                <p className="text-xl text-gray-600 mt-3 font-normal">
+                  Transform chaos into clarity with our intelligent task
+                  management platform. Built for modern teams who value efficiency
+                  and collaboration.
+                </p>
               </h2>
-              <p className="text-xl text-gray-600">
-                Transform chaos into clarity with our intelligent task
-                management platform. Built for modern teams who value efficiency
-                and collaboration.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-6">
+
+              <div className="grid sm:grid-cols-2 gap-10">
                 {features.slice(0, 4).map((feature, index) => (
-                  <div key={index} className="flex items-start space-x-4">
-                    <div className="bg-black rounded-lg p-2 text-white">
+                  <div key={index} className="flex items-start space-x-3 p-4 rounded-xl bg-gray-100 hover:bg-zinc-100 transition-colors">
+                    <div className="bg-black rounded-full p-3 text-white">
                       {React.createElement(icons[index], { size: 24 })}
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{feature.title}</h3>
-                      <p className="text-gray-600 text-sm">
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg">{feature.title}</h3>
+                      <p className="text-gray-600 text-md leading-relaxed">
                         {feature.description}
                       </p>
                     </div>
@@ -256,7 +255,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Feature Showcase */}
       <section className="bg-gray-50 py-16 sm:py-20 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-12 sm:mb-16">
@@ -268,66 +266,8 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="space-y-20 sm:space-y-32">
-            {/* Feature 1 */}
-            <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-              <div className="order-2 lg:order-1 space-y-6">
-                <h3 className="text-2xl sm:text-3xl font-bold">
-                  Smart Task Organization
-                </h3>
-                <p className="text-base sm:text-lg text-gray-600">
-                  Automatically categorize and prioritize tasks based on your
-                  team's needs.
-                </p>
-                <ul className="space-y-4">
-                  {features.slice(0, 3).map((feature, index) => (
-                    <li key={index} className="flex items-start space-x-3">
-                      <CheckCircle className="text-green-500 flex-shrink-0 mt-1" />
-                      <span className="text-gray-600">{feature.description}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="order-1 lg:order-2">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-                  <img
-                    src="https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850134/behnam-norouzi-GAgEfSQMPa4-unsplash_uqwnej.jpg"
-                    className="w-full h-full object-cover"
-                    alt="Task Organization"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-              <div>
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-                  <img
-                    src="https://res.cloudinary.com/dml6gxfmn/image/upload/v1735849601/authImage_seuq1p.jpg"
-                    className="w-full h-full object-cover"
-                    alt="Collaboration"
-                  />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-2xl sm:text-3xl font-bold mb-4">
-                  Real-time Collaboration
-                </h3>
-                <p className="text-base sm:text-lg text-gray-600 mb-6">
-                  Work together seamlessly, no matter where your team is
-                  located.
-                </p>
-                <ul className="space-y-4">
-                  {features.slice(3, 6).map((feature, index) => (
-                    <li key={index} className="flex items-start space-x-3">
-                      <CheckCircle className="text-green-500 flex-shrink-0 mt-1" />
-                      <span className="text-gray-600">{feature.description}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+          <div>
+            <FeatureCarousel />
           </div>
         </div>
       </section>
@@ -335,22 +275,13 @@ const LandingPage: React.FC = () => {
 
 
       <section className="relative py-16 sm:py-20">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850133/georgie-cobbs-muOHbrFGEQY-unsplash_srkxsc.jpg"
-            className="w-full h-full object-cover opacity-20"
-            alt="Background"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
-        </div>
-
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">
-              Ready to Transform Your Team?
+              Ready to Transform Your Organisation?
             </h2>
             <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8">
-              Join thousands of teams already using Synapse to boost their
+              Join hundereds of Organisation already using Synapse to boost their
               productivity.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

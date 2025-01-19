@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { loadFromLocalStorage } from "../../../utils/localStorage";
-import ProjectCard from "../../../component/ui/ProjectCard";
+import ProjectCard from "../../../components/ui/ProjectCard";
 import { Project } from "../../../types";
 
 const AllProjects: React.FC = () => {
