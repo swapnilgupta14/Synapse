@@ -4,7 +4,7 @@ import { Organisation, User } from '../../types';
 // import { updateUserTeam } from '../../redux/userSlice';
 import { Plus, Search, X } from 'lucide-react';
 import { updateTeam } from '../../redux/reducers/teamsSlice';
-import { addTeamMember, removeTeamMember } from '../../api/teamServices';
+import { addTeamMember, removeTeamMember } from '../../api/services/teamServices';
 
 const AddTeamMembersModal: React.FC<{
     teamId: number;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Team, Project } from '../../types';
-import { createTeam, updateTeam } from '../../api/teamServices';
-import { getProjects } from '../../api/projectServices';
+import { createTeam, updateTeam } from '../../api/services/teamServices';
+import { getProjects } from '../../api/services/projectServices';
 
 interface AddTeamsComponentProps {
     isEditing?: boolean;

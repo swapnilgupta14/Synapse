@@ -33,10 +33,10 @@ const DashboardRedirect: React.FC = () => {
             const route = (() => {
                 switch (user.role) {
                     case 'Admin':
-                        setTimeout(() => preloadRoute('/dashboard/admin'), 100);
+                        setTimeout(() => preloadRoute('/dashboard/admin'), 0);
                         return '/dashboard/admin/tasks';
                     case 'Organisation':
-                        setTimeout(() => preloadRoute('/dashboard/organisation'), 100);
+                        setTimeout(() => preloadRoute('/dashboard/organisation'), 0);
                         return '/dashboard/organisation';
                     default:
                         return '/dashboard/user';
