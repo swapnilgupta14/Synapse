@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { fetchFeatures, fetchQuickLinks, fetchSocialLinks } from "./api/fetch";
-import { Organisation } from './types/index';
+// import { Organisation } from './types/index';
 import FeatureCarousel from "./components/ui/FeatureCarousel";
 
 interface Feature {
