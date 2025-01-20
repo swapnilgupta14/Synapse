@@ -21,6 +21,6 @@ export interface Organisation extends User {
   organisationId: number;
   description?: string;
   ownerId: number;
-  members?: User[];
+  members?: number[];
   location?: string;
 }

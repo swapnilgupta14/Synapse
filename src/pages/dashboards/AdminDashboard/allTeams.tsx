@@ -1,25 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { loadFromLocalStorage } from "../../../utils/localStorage";
 import { Team, User } from "../../../types";
 import TeamCard from "../../../components/ui/TeamCard";
 import TeamDetailsPopup from "../../../components/popups/TeamDetailPopup";
+import teamServices from "../../../api/services/teamServices";
+import userServices from "../../../api/services/userServices";
 
 const AllTeams: React.FC = () => {
   const [allTeams, setAllTeams] = useState<Team[]>([]);
-
   const [users, setUsers] = useState<User[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
   useEffect(() => {
-    const teams = loadFromLocalStorage("teams", []);
-    if (teams) {
-      setAllTeams(teams);
+
+    const getTeams = async () => {
+      const res = await teamServices.getAllTeams();
+      if (res) {
+        setAllTeams(res);
+      }
     }
 
-    const signedUpUsers = loadFromLocalStorage("SignedUpUsers", []);
-    if (signedUpUsers) {
-      setUsers(signedUpUsers);
-    }
+    const fetchAllUsers = async () => {
+      try {
+        const users = await userServices.getAllUsers();
+        setUsers(users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    getTeams();
+    fetchAllUsers();
   }, []);
 
   const handleTeamClick = (team: Team) => {

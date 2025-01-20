@@ -13,3 +13,24 @@ export interface RootState {
   tasks: Task[];
   statistics: Statistics;
 }
+
+export interface ArchiveDialogProps {
+  showArchiveDialog: boolean;
+  setShowArchiveDialog: (show: boolean) => void;
+  archiveDate: Date;
+  setArchiveDate: (date: Date) => void;
+  selectedTasks: number[];
+  handleArchiveTasks: () => Promise<void>;
+}
+
+export interface ReassignDialogProps {
+  showReassignDialog: boolean;
+  setShowReassignDialog: (show: boolean) => void;
+  reassignData: {
+    fromUserId: number;
+    toUserId: number;
+  };
+  setReassignData: (data: { fromUserId: number; toUserId: number }) => void;
+  selectedTasks: number[];
+  handleReassignTasks: () => Promise<void>;
+}

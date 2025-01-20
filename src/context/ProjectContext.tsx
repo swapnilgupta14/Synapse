@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance';
 import { Project } from '../types';
+import toast from 'react-hot-toast';
 
 interface ProjectContextType {
   projects: Project[];
   loading: boolean;
   error: string | null;
   fetchProjects: () => Promise<void>;
-  createProject: (project: Omit<Project, 'projectId'>) => Promise<void>;
+  createProject: (project: Project) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
   deleteProject: (id: number) => Promise<void>;
 }
@@ -31,7 +32,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const createProject = async (project: Omit<Project, 'projectId'>) => {
+  const createProject = async (project: Project) => {
     try {
       const response = await axiosInstance.post('/projects', project);
       setProjects([...projects, response.data]);
@@ -53,8 +54,10 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       await axiosInstance.delete(`/projects/${id}`);
       setProjects(projects.filter(p => p.projectId !== id));
+      toast.success("Project Deleted Successfully!")
     } catch (err) {
       setError('Failed to delete project');
+      toast.error("Failed to delete Project")
     }
   };
 

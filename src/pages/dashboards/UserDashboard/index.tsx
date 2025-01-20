@@ -3,20 +3,17 @@ import { Calendar, Search, Grid, List, Plus, Clock, Tag, Flag, ChevronLeft, Chev
 import { ClipboardList, LogOut } from "lucide-react"
 import ProfilePopup from '../../../components/popups/ProfilePopup';
 import TeamCard from '../../../components/ui/TeamCard';
-
-import { useAppSelector, useAppDispatch } from '../../../redux/store';
-import {
-    addTask,
-    deleteTask,
-    toggleTaskStatus,
-} from '../../../redux/reducers/taskSlice';
 import { Task, Team, User } from '../../../types';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../../redux/reducers/authSlice';
-import TaskDetailPopup from '../../../components/popups/TaskDetailPopup';
+import { useAppSelector, useAppDispatch } from '../../../redux/store';
+import { taskServices } from '../../../api/services/taskServices';
 import StatCard from '../../../components/ui/StatCard';
 import TeamDetailsPopup from '../../../components/popups/TeamDetailPopup';
-import { loadFromLocalStorage } from '../../../utils/localStorage';
+import TaskDetailPopup from '../../../components/popups/TaskDetailPopup';
+import toast from 'react-hot-toast';
+import teamServices from '../../../api/services/teamServices';
+import userServices from '../../../api/services/userServices';
 
 type selectedMember = User | null;
 
@@ -24,48 +21,14 @@ const UserDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
-    const { tasks } = useAppSelector(state => state.tasks);
+    const [tasks, setTasks] = useState<Task[]>([]);
 
     const [users, setUsers] = useState<User[]>([]);
     const [selected, setSelected] = useState<Team | null>(null);
 
-    useEffect(() => {
-        const signedUpUsers = loadFromLocalStorage("SignedUpUsers", []);
-        if (signedUpUsers) {
-            setUsers(signedUpUsers);
-        }
-    }, []);
-
-    const handleTeamClick = (team: Team) => {
-        setSelected(team);
-    };
-
-    const closeModal = () => {
-        setSelected(null);
-    };
-
-
-    const currentUser = useMemo(() => {
-        const storedUsers = localStorage.getItem("SignedUpUsers");
-        if (storedUsers) {
-            const storedUser = JSON.parse(storedUsers).find((it: User) => it.id === user?.id);
-            return storedUser ? storedUser : null;
-        }
-    }, []);
-
-    const workTeam = useMemo(() => {
-        if (!currentUser) return [];
-        const teams = JSON.parse(localStorage.getItem('teams') || '[]');
-        const memberTeams = teams.filter((team: Team) =>
-            team.members.some((member: User) => member.id === currentUser.id && member.role === "Team Member")
-        );
-        return memberTeams;
-    }, []);
-
-
-    const allTeams = useAppSelector((state) => state.teams.teams);
-    const managedTeams = allTeams.filter((team: Team) => team?.teamManagerId === user?.id);
-
+    const [members, setMembers] = useState<User[]>([]);
+    const [allTeams, setAllTeams] = useState<Team[]>([]);
+    const [managedTeams, setManagedTeams] = useState<Team[]>([]);
     const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
     const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
@@ -82,22 +45,119 @@ const UserDashboard = () => {
     const [selectedMember, setSelectedMember] = useState<selectedMember>(null);
 
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [selectedTaskId, setSelectedTaskId] = useState<number>(0);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+    const handleTeamClick = (team: Team) => {
+        setSelected(team);
+    };
+
+    const closeModal = () => {
+        setSelected(null);
+    };
+
+    const currentUser = useAppSelector((state) => state.auth.user);
+    const [workTeam, setTeams] = useState<Team[]>([]);
+
+    useEffect(() => {
+        const fetchTeamsByUser = async () => {
+            if (!currentUser?.id) return;
+
+            console.log(currentUser);
+
+            const teamIdArray = currentUser?.teamId || [];
+            try {
+                const teamsData = await Promise.all(
+                    teamIdArray.map(async (item) => {
+                        const team = await teamServices.getTeamById(item);
+                        const members = await Promise.all(
+                            team.members.map(async (memberId) => {
+                                return userServices.getUserById(memberId);
+                            })
+                        );
+                        return { ...team, members };
+                    })
+                );
+                setTeams(teamsData);
+            } catch (error) {
+                console.error("Error fetching teams:", error);
+            }
+        };
+
+        fetchTeamsByUser();
+    }, [currentUser?.id]);
+
+    useEffect(() => {
+        const fetchAllusers = async () => {
+            const res: User[] = await userServices?.getAllUsers();
+            if (res) {
+                setUsers(res);
+            }
+        }
+
+        fetchAllusers();
+    }, [])
+
+    useEffect(() => {
+        const fetchMembers = async () => {
+            if (!selectedTeam) return;
+            try {
+                const fetchedMembers: User[] = await Promise.all(
+                    selectedTeam.members.map(async (memberId) => {
+                        const member = await userServices.getUserById(memberId);
+                        return member;
+                    })
+                );
+                setMembers(fetchedMembers);
+            } catch (error) {
+                console.error("Error fetching members:", error);
+            }
+        };
+
+        fetchMembers();
+    }, [selectedTeam]);
+
+    const getTeams = async () => {
+        const res = await teamServices.getAllTeams();
+        if (res) {
+            setAllTeams(res);
+            setManagedTeams(allTeams.filter((team: Team) => team?.teamManagerId === user?.id))
+        }
+    }
+
+    useEffect(() => {
+        getTeams();
+    }, []);
 
     // const handleTaskDetailPopup = () => {
     //     setIsPopupOpen(!isPopupOpen);
     // }
+    const fetchTasks = async () => {
+        try {
+            const tasks = await taskServices.getAllTasks();
+            setTasks(tasks);
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchTasks();
+    }, []);
+
+    console.log(currentUser)
 
     const filteredTasks = useMemo(() => {
         if (!currentUser) return [];
         let tasksToFilter = [];
         if (currentUser.role === 'Team Member') {
             tasksToFilter = tasks.filter((item) => item.assignedTo == currentUser.id);
+            console.log(tasksToFilter, "HIiii")
         } else if (currentUser.role === 'Team Manager') {
             tasksToFilter = tasks.filter((item) => item?.createdBy === currentUser.id);
         } else {
             tasksToFilter = tasks;
         }
+
 
         return tasksToFilter.filter(task => {
             const matchesSearch =
@@ -191,40 +251,45 @@ const UserDashboard = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
     };
 
-    const handleAddTask = () => {
+    const handleAddTask = async () => {
         try {
             if (!currentUser) {
                 throw new Error("User is not authenticated");
             }
 
-            let baseTask: Task = {
+            let baseTask = {
                 ...newTask,
-                taskId: Date.now(),
                 status: 'pending',
-                createdAt: new Date().toISOString(),
                 createdBy: currentUser.id,
                 assignedTo: undefined,
             };
 
             if (taskType === 'team' && selectedTeam && !selectedMember) {
-                const teamTasks: Task[] = selectedTeam.members
+                const members = await Promise.all(
+                    selectedTeam.members.map(async (memberId) => {
+                        return userServices.getUserById(memberId);
+                    })
+                );
+                const teamTasks = members
                     .filter(member => member.role !== "Team Manager")
                     .map(member => ({
                         ...baseTask,
                         assignedTo: member.id,
+                        createdBy: currentUser.id,
                         teamId: selectedTeam.teamId,
                     }));
 
-                teamTasks.forEach((eachTask) => dispatch(addTask(eachTask)))
-
+                await Promise.all(teamTasks.map(task => taskServices.addTask(task)));
+                fetchTasks();
             } else {
-                const individualTask: Task = {
+                const individualTask = {
                     ...baseTask,
-                    assignedTo: selectedMember?.id,
+                    createdBy: currentUser.id,
+                    assignedTo: currentUser.id,
                 };
 
-                console.log(individualTask, "Individual task to add");
-                dispatch(addTask(individualTask));
+                await taskServices.addTask(individualTask);
+                fetchTasks();
             }
 
             setNewTask({
@@ -235,25 +300,31 @@ const UserDashboard = () => {
                 dueDate: '',
             });
             setShowAddTask(false);
+            toast.success('Task added successfully');
         } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'An unexpected error occurred');
             alert(err instanceof Error ? err.message : 'An unexpected error occurred');
         }
     };
 
-
-
-    const handleToggleStatus = (taskId: number) => {
+    const handleToggleStatus = async (taskId: number) => {
         try {
-            dispatch(toggleTaskStatus(taskId));
+            await taskServices.toggleTaskStatus(taskId);
+            fetchTasks();
+            toast.success('Task status updated successfully');
         } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'An unexpected error occurred');
             alert(err instanceof Error ? err.message : 'An unexpected error occurred');
         }
     };
 
-    const handleDeleteTask = (taskId: number) => {
+    const handleDeleteTask = async (taskId: number) => {
         try {
-            dispatch(deleteTask(taskId));
+            await taskServices.deleteTask(taskId);
+            toast.success('Task deleted successfully');
+            fetchTasks();
         } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'An unexpected error occurred');
             alert(err instanceof Error ? err.message : 'An unexpected error occurred');
         }
     };
@@ -534,7 +605,7 @@ const UserDashboard = () => {
 
                                                 <div className="flex flex-wrap items-center gap-2 mt-2">
                                                     <span onClick={() => {
-                                                        setSelectedTaskId(task.taskId);
+                                                        setSelectedTask(task);
                                                         setIsPopupOpen(true);
                                                     }}
                                                         className='cursor-pointer bg-blue-100 py-1 px-2 rounded-full'
@@ -739,7 +810,7 @@ const UserDashboard = () => {
 
                                                     {showSearchResults && searchMemberQuery && (
                                                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                            {selectedTeam.members
+                                                            {members
                                                                 .filter((member) =>
                                                                     member.username.toLowerCase().includes(searchMemberQuery.toLowerCase())
                                                                 )
@@ -790,9 +861,9 @@ const UserDashboard = () => {
                     isPopupOpen={isPopupOpen}
                     onClose={() => {
                         setIsPopupOpen(false);
-                        setSelectedTaskId(0);
+                        setSelectedTask(null);
                     }}
-                    taskId={selectedTaskId}
+                    task={selectedTask}
                 />
 
                 {selected && (

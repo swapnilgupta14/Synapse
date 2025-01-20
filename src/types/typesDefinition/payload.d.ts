@@ -27,12 +27,13 @@ export interface CreateOrganisationPayload {
     priority: "high" | "medium" | "low";
     category?: string;
     dueDate?: string;
+    createdBy?: number;
     assignedTo?: number;
     teamId?: number;
   }
   
   export interface UpdateTaskPayload {
-    id: number;
+    id?: number;
     title?: string;
     description?: string;
     priority?: "high" | "medium" | "low";

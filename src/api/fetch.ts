@@ -111,3 +111,13 @@ export const fetchImage = async () => {
     throw error;
   }
 };
+
+export const fetchDb = async () => {
+  try {
+    const response = await axiosInstance.get("/db");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching db:", error);
+    throw error;
+  }
+};

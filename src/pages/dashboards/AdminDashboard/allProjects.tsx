@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { loadFromLocalStorage } from "../../../utils/localStorage";
 import ProjectCard from "../../../components/ui/ProjectCard";
 import { Project } from "../../../types";
+import projectServices from "../../../api/services/projectServices";
 
 const AllProjects: React.FC = () => {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    const projects = loadFromLocalStorage("projects", []);
-    if (projects) {
-      setAllProjects(projects);
+    const getProjects = async () => {
+      const projects = await projectServices.getAllProjects();
+      if (projects) {
+        setAllProjects(projects);
+      }
     }
+    getProjects();
   }, []);
 
   return (

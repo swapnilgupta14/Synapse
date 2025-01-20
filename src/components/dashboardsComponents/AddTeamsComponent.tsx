@@ -1,54 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X } from 'lucide-react';
+import { X, Loader2, Users } from 'lucide-react';
 import { Team, Project } from '../../types';
-import { createTeam, updateTeam } from '../../api/services/teamServices';
-import { getProjects } from '../../api/services/projectServices';
+import teamServices from '../../api/services/teamServices';
+import projectServices from '../../api/services/projectServices';
 
 interface AddTeamsComponentProps {
+    organisationId: number | null;
     isEditing?: boolean;
     existingTeam?: Team;
     onClose?: () => void;
+    onTeamAdded?: () => void;
 }
 
 const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
+    organisationId,
     isEditing = false,
     existingTeam,
-    onClose
+    onClose,
+    onTeamAdded
 }) => {
+    if (!organisationId) return null;
+
     const [isOpen, setIsOpen] = useState(false);
     const [teamName, setTeamName] = useState('');
-    const [projectId, setProjectId] = useState(0);
+    const [projectId, setProjectId] = useState<number | null>(null);
     const [description, setDescription] = useState('');
-    const [teamManagerId, setTeamManagerId] = useState(0);
+    const [teamManagerId, setTeamManagerId] = useState<number | null>(null);
     const [projects, setProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (isEditing && existingTeam) {
             setTeamName(existingTeam.name);
-            setProjectId(existingTeam.projectId);
+            setProjectId(existingTeam.projectId || null);
             setDescription(existingTeam.description || '');
-            setTeamManagerId(existingTeam.teamManagerId);
+            setTeamManagerId(existingTeam.teamManagerId || null);
             setIsOpen(true);
         }
     }, [isEditing, existingTeam]);
 
     useEffect(() => {
         const fetchProjectsList = async () => {
+            if (!isOpen) return;
+
             try {
-                setLoading(true);
-                const projectsData = await getProjects();
+                setIsLoading(true);
+                const projectsData = await projectServices.getProjects();
                 setProjects(projectsData);
             } catch (error) {
                 console.error('Error fetching projects:', error);
-                alert('Failed to load projects');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
         fetchProjectsList();
-    }, []);
+    }, [isOpen]);
+
+    const handleProjectChange = (newProjectId: string) => {
+        setProjectId(newProjectId ? Number(newProjectId) : null);
+    };
 
     const handleSubmit = async () => {
         if (!teamName.trim()) {
@@ -56,50 +68,63 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
             return;
         }
 
-        if (!projectId) {
-            alert('Please select a project');
-            return;
-        }
-
+        setIsSaving(true);
         try {
-            if (isEditing && existingTeam) {
-                await updateTeam(existingTeam.teamId, {
-                    name: teamName,
-                    projectId,
-                    description: description || undefined,
-                    teamManagerId
-                });
+            const teamData: Partial<Team> = {
+                name: teamName,
+                organisationId,
+                projectId: projectId || undefined,
+                description: description || undefined,
+                teamManagerId: teamManagerId || undefined,
+                members: existingTeam?.members,
+                createdAt: existingTeam?.createdAt,
+                id: existingTeam?.id,
+                teamId: existingTeam?.teamId,
+            };
+
+            if (isEditing && existingTeam?.teamId) {
+                await teamServices.updateTeam(existingTeam.teamId, teamData as Team);
+                if (existingTeam.projectId !== projectId) {
+                    if (projectId !== null) {
+                        await teamServices.assignTeamToProject(existingTeam.teamId, projectId);
+                    } else if (existingTeam.projectId) {
+                        await teamServices.removeTeamFromProject(existingTeam.teamId);
+                    }
+                }
             } else {
-                await createTeam({
-                    name: teamName,
-                    projectId,
-                    description: description || undefined,
-                    teamManagerId,
-                    members: [],
+                const newTeam = await teamServices.createTeam({
+                    ...teamData,
                     createdAt: new Date().toISOString()
-                });
+                } as Team);
+
+                if (projectId !== null && newTeam.teamId) {
+                    await teamServices.assignTeamToProject(newTeam.teamId, projectId);
+                }
             }
 
+            onTeamAdded?.();
             resetForm();
             setIsOpen(false);
-            onClose && onClose();
+            onClose?.();
         } catch (error) {
             console.error('Error handling team:', error);
             alert('Failed to save team');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const resetForm = () => {
         setTeamName('');
-        setProjectId(0);
+        setProjectId(null);
         setDescription('');
-        setTeamManagerId(0);
+        setTeamManagerId(null);
     };
 
     const handleClose = () => {
         setIsOpen(false);
         resetForm();
-        onClose && onClose();
+        onClose?.();
     };
 
     return (
@@ -107,9 +132,10 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
             {!isEditing && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="p-2 rounded-md hover:bg-gray-700 transition-colors bg-black "
+                    className="bg-black text-white px-4 py-2 rounded-3xl flex items-center hover:bg-gray-800 transition text-sm"
                 >
-                    <Plus className="h-4 w-4 text-white" />
+                    <Users className="mr-2" size={18} />
+                    Add Team
                 </button>
             )}
 
@@ -149,6 +175,7 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                                     onChange={(e) => setTeamName(e.target.value)}
                                     placeholder="Enter team name"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                                    disabled={isSaving}
                                 />
                             </div>
 
@@ -157,28 +184,25 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                                     htmlFor="project"
                                     className="block text-sm font-medium text-gray-700 mb-2"
                                 >
-                                    Project
+                                    Project (Optional)
                                 </label>
                                 <select
                                     id="project"
-                                    value={projectId}
-                                    onChange={(e) => setProjectId(Number(e.target.value))}
+                                    value={projectId || ""}
+                                    onChange={(e) => handleProjectChange(e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                                    disabled={loading}
+                                    disabled={isLoading || isSaving}
                                 >
-                                    <option value="0">Select a project</option>
+                                    <option value="">Select a project</option>
                                     {projects.map((project) => (
                                         <option
-                                            key={project.projectId || project.projectId}
-                                            value={project.projectId || project.projectId}
+                                            key={project.projectId ?? project.id}
+                                            value={project.projectId ?? project.id}
                                         >
                                             {project.name}
                                         </option>
                                     ))}
                                 </select>
-                                {loading && (
-                                    <p className="text-sm text-gray-500 mt-1">Loading projects...</p>
-                                )}
                             </div>
 
                             <div>
@@ -195,6 +219,7 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                                     placeholder="Optional team description"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                                     rows={3}
+                                    disabled={isSaving}
                                 />
                             </div>
                         </div>
@@ -203,14 +228,23 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                             <button
                                 onClick={handleClose}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black"
+                                disabled={isSaving}
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-black"
+                                disabled={isSaving}
+                                className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-black flex items-center"
                             >
-                                {isEditing ? 'Update Team' : 'Add Team'}
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="animate-spin mr-2" size={14} />
+                                        {isEditing ? 'Updating...' : 'Adding...'}
+                                    </>
+                                ) : (
+                                    isEditing ? 'Update Team' : 'Add Team'
+                                )}
                             </button>
                         </div>
                     </div>

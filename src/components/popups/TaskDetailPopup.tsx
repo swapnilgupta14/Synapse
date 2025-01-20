@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   X,
   CalendarDays,
@@ -11,21 +11,15 @@ import {
   FileText,
   UserCheck
 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { RootState, Task } from '../../types';
+import { Task } from '../../types';
 
 type PropTypes = {
   isPopupOpen?: boolean;
   onClose: () => void;
-  taskId: number;
+  task: Task | null;
 }
 
-const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
-  if (taskId === 0) return null;
-
-  const tasks = useSelector((state: RootState) => state.tasks);
-  const taskArr: Task[] = (tasks as any).tasks;
-  const task = taskArr.find(t => t.taskId === taskId);
+const TaskDetailPopup: React.FC<PropTypes> = memo(({ onClose, task }) => {
 
   if (!task) return null;
 
@@ -33,10 +27,15 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
         <div className="flex justify-between items-center p-6 bg-gray-50">
-          <div className="flex items-center gap-2">
-            <FileText className="text-gray-600" size={24} />
-            <h2 className="text-xl font-semibold text-gray-800">Task Details</h2>
+          <div className="flex items-center justify-center gap-2">
+            <div className="p-2 flex items-center justify-center">
+              <FileText className="text-gray-600 w-6 h-6" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-800 self-center flex items-center justify-center">
+              Task Details
+            </h2>
           </div>
+
           <button
             onClick={onClose}
             aria-label="Close"
@@ -52,7 +51,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <Hash className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Task ID</label>
+                  <label className="text-md font-medium text-gray-500">Task ID</label>
                   <p className="text-gray-900 font-medium">{task.taskId}</p>
                 </div>
               </div>
@@ -60,7 +59,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <FileText className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Title</label>
+                  <label className="text-md font-medium text-gray-500">Title</label>
                   <p className="text-gray-900 font-medium">{task.title}</p>
                 </div>
               </div>
@@ -68,7 +67,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <Clock className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Created At</label>
+                  <label className="text-md font-medium text-gray-500">Created At</label>
                   <p className="text-gray-900 font-medium">
                     {new Date(task.createdBy).toLocaleDateString()}
                   </p>
@@ -78,7 +77,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <User className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Created By</label>
+                  <label className="text-md font-medium text-gray-500">Created By</label>
                   <p className="text-gray-900 font-medium">{task.createdBy}</p>
                 </div>
               </div>
@@ -88,7 +87,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <UserCheck className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Assigned To</label>
+                  <label className="text-md font-medium text-gray-500">Assigned To</label>
                   <p className="text-gray-900 font-medium">
                     {task.createdBy === task.assignedTo ? "Self" : task.assignedTo}
                   </p>
@@ -98,7 +97,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <AlertCircle className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500 mr-3">Priority</label>
+                  <label className="text-md font-medium text-gray-500 mr-3">Priority</label>
                   <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${task.priority === 'high'
                     ? 'bg-red-100 text-red-700 border border-red-200'
                     : task.priority === 'medium'
@@ -113,7 +112,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <Tag className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500 ">Category</label>
+                  <label className="text-md font-medium text-gray-500">Category</label>
                   <p className="text-gray-900 font-medium">{task.category}</p>
                 </div>
               </div>
@@ -121,7 +120,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500 mr-3">Status</label>
+                  <label className="text-md font-medium text-gray-500 mr-3">Status</label>
                   <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${task.status === 'completed'
                     ? 'bg-green-100 text-green-700 border border-green-200'
                     : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
@@ -134,7 +133,7 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
               <div className="flex items-start gap-3">
                 <CalendarDays className="mt-1 text-gray-400" size={18} />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Due Date</label>
+                  <label className="text-md font-medium text-gray-500">Due Date</label>
                   <p className="text-gray-900 font-medium">
                     {task.dueDate
                       ? new Date(task.dueDate).toLocaleDateString()
@@ -158,6 +157,8 @@ const TaskDetailPopup: React.FC<PropTypes> = ({ onClose, taskId }) => {
       </div>
     </div>
   );
-};
+});
+
+TaskDetailPopup.displayName = 'TaskDetailPopup';
 
 export default TaskDetailPopup;

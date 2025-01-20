@@ -9,6 +9,7 @@ export interface Project {
     status: "active" | "archived" | "planning";
     startDate?: string;
     endDate?: string;
+    id?: number,
   }
   
   export interface ProjectsState {

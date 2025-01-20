@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAppDispatch } from '../redux/store';
-import { setCredentials } from '../redux/reducers/authSlice';
-import { AuthUI } from './authUI';
+import { useAppDispatch } from '../../redux/store';
+import { setCredentials } from '../../redux/reducers/authSlice';
+import { AuthUI } from '../authentication/authUI';
 import {
     createUser,
     createOrganisation,
     getUserByCredentials,
     getOrgByCredentials
-} from '../api/fetch';
+} from '../../api/fetch';
+import toast from 'react-hot-toast';
 
 const Auth: React.FC = () => {
     const [isSignup, setIsSignup] = useState(false);
@@ -52,11 +53,12 @@ const Auth: React.FC = () => {
                         ownerId: newUserData.id,
                     };
                     await createOrganisation(orgData);
+                    toast.success('Organisation created successfully! Please login.');
                 } else {
                     await createUser(newUserData);
+                    toast.success('Signup successful! Please login.');
                 }
 
-                alert('Signup successful! Please login.');
                 setIsSignup(false);
                 return;
             }
@@ -66,7 +68,7 @@ const Auth: React.FC = () => {
                 : await getUserByCredentials(formData.username, formData.password);
 
             if (!user) {
-                throw new Error('Invalid credentials');
+                toast.error('No account found with the provided credentials');
             }
 
             const { password, ...userWithoutPassword } = user;
@@ -75,9 +77,10 @@ const Auth: React.FC = () => {
             localStorage.setItem('token', user.token);
 
             navigate('/dashboard');
+            toast.success('Login successful');
 
         } catch (error) {
-            alert(error instanceof Error ? error.message : 'Authentication failed');
+            console.log(error instanceof Error ? error.message : 'Authentication failed');
         }
     };
 

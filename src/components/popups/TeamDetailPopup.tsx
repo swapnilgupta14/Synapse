@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     X, Users, Briefcase, UserCircle2, Calendar, InfoIcon,
     ShieldCheck, MailIcon, UserIcon,
     BarChart2, ClockIcon, TagIcon
 } from "lucide-react";
-import { Team, User } from "../../types";
-import { useAppSelector } from "../../redux/store";
+import { Project, Team, User } from "../../types";
+import projectServices from "../../api/services/projectServices";
 
 interface TeamDetailsModalProps {
     team: Team;
@@ -19,13 +19,39 @@ const TeamDetailsPopup: React.FC<TeamDetailsModalProps> = ({
     onClose
 }) => {
     const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'details'>('overview');
-    const projects = useAppSelector(state => state.projects.projects);
-
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [teamMembers, setTeamMembers] = useState<User[]>([]);
     const teamManager = users.find(user => user.id === team.teamManagerId);
     const associatedProject = projects.find(project => project.projectId === team.projectId);
-    const teamMembers = team.members.map((item) =>
-        users.find((user) => user.id === item.id)
-    );
+
+
+    const fetchProjects = async () => {
+        try {
+            const res = await projectServices.getProjects();
+            setProjects(res || []);
+        } catch (error) {
+            console.error("Error fetching projects:", error);
+            setProjects([]);
+        }
+    };
+
+    const fetchAllTeamsMembers = async () => {
+        console.log(team?.members)
+        // const membersIds = team?.members;
+        // const members = await Promise.all(
+        //     membersIds.map(async (memberId) => {
+        //         return userServices.getUserById(memberId);
+        //     })
+        // );
+        setTeamMembers(team?.members as unknown as User[]);
+
+    }
+
+
+    useEffect(() => {
+        fetchProjects();
+        fetchAllTeamsMembers();
+    }, [])
 
     const tabs = [
         {
@@ -105,7 +131,7 @@ const TeamDetailsPopup: React.FC<TeamDetailsModalProps> = ({
                                         <p className="text-sm text-zinc-600">Created On</p>
                                         <p className="font-medium flex items-center text-zinc-900">
                                             <Calendar size={16} className="mr-2 text-zinc-500" />
-                                            {new Date(team.createdAt).toLocaleDateString()}
+                                            {team.createdAt ? new Date(team.createdAt).toLocaleDateString() : 'N/A'}
                                         </p>
                                     </div>
                                     <div>

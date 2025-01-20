@@ -99,7 +99,7 @@ const FeatureCarousel: React.FC<FeatureCarouselProps> = ({
                     >
                         {features.map((feature, index) => (
                             <div key={index} className="w-full flex-shrink-0 relative">
-                                <div className="h-[50vh] md:max-h-[80vh] relative">
+                                <div className="h-[50vh] md:h-[65vh] relative">
                                     <img
                                         src={feature.image}
                                         alt={feature.title}

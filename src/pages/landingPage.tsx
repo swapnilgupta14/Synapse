@@ -12,12 +12,11 @@ import {
   Twitter,
   Linkedin,
   Github,
-  Menu,
-  X,
 } from "lucide-react";
-import { fetchFeatures, fetchQuickLinks, fetchSocialLinks } from "./api/fetch";
-// import { Organisation } from './types/index';
-import FeatureCarousel from "./components/ui/FeatureCarousel";
+import { fetchFeatures, fetchQuickLinks, fetchSocialLinks } from '../api/fetch';
+import FeatureCarousel from "../components/ui/FeatureCarousel";
+import Header from "../components/Header";
+import PricingSection from "../components/ui/PricingSectinos";
 
 interface Feature {
   title: string;
@@ -36,10 +35,12 @@ interface SocialLink {
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-
+  // const [isLoading, setIsLoading] = useState(true);
   const [features, setFeatures] = useState<Feature[]>([]);
   const [quickLinks, setQuickLinks] = useState<QuickLinkSection[]>([]);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+
+  const mainContentRef = React.useRef<HTMLDivElement>(null);
 
   const icons: LucideIcon[] = [
     CheckCircle,
@@ -50,9 +51,7 @@ const LandingPage: React.FC = () => {
     Share2,
   ];
 
-  const navigateToLogin = () => handleNavigate("/auth?mode=login");
-  const navigateToSignupOrganization = () => handleNavigate("/auth?mode=signup&role=organisation");
-  const navigateToDemo = () => handleNavigate("/demo");
+  const navigateToDemo = () => handleNavigate("/");
   const navigateToSignupUser = () => handleNavigate("/auth/?mode=signup");
 
   const handleNavigate = (path: string): void => {
@@ -64,15 +63,20 @@ const LandingPage: React.FC = () => {
 
   const loadData = async (): Promise<void> => {
     try {
-      const [featuresData, quickLinksData, socialLinksData] = await Promise.all(
-        [fetchFeatures(), fetchQuickLinks(), fetchSocialLinks()]
-      );
+      // setIsLoading(true);
+      const [featuresData, quickLinksData, socialLinksData] = await Promise.all([
+        fetchFeatures(),
+        fetchQuickLinks(),
+        fetchSocialLinks(),
+      ]);
 
       setFeatures(featuresData);
       setQuickLinks(quickLinksData);
       setSocialLinks(socialLinksData);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      // setIsLoading(false);
     }
   };
 
@@ -80,79 +84,35 @@ const LandingPage: React.FC = () => {
     loadData();
   }, []);
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/image.png";
+    img.onload = () => setImagesLoaded(true);
+  }, []);
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="bg-black py-1 px-2 font-bold text-white rounded-2xl">Syn</span>
-              <span className="text-2xl font-bold text-black">SYNAPSE.</span>
-            </div>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-black"
+      >
+        Skip to main content
+      </a>
 
-            <div className="hidden sm:flex items-center space-x-6">
-              <nav className="flex space-x-8 mr-8">
-                <a href="#features" className="text-gray-600 hover:text-black transition-colors">Features</a>
-                <a href="#solutions" className="text-gray-600 hover:text-black transition-colors">Solutions</a>
-                <a href="#pricing" className="text-gray-600 hover:text-black transition-colors">Pricing</a>
-              </nav>
-              <div className="flex space-x-4">
-                <button
-                  onClick={navigateToLogin}
-                  className="px-6 py-2.5 text-black border-2 border-black rounded-lg hover:bg-blue-50 transition font-medium"
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={navigateToSignupOrganization}
-                  className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium"
-                >
-                  Join as an Organization
-                </button>
-              </div>
-            </div>
+      <Header />
 
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="sm:hidden p-2 rounded-lg hover:bg-gray-100"
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-
-          {isMobileMenuOpen && (
-            <div className="sm:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-100 z-50">
-              <div className="container mx-auto px-4">
-                <div className="flex flex-col space-y-4 py-6">
-                  <button
-                    onClick={navigateToLogin}
-                    className="w-full px-6 py-4 text-center text-black border border-black rounded-lg hover:bg-blue-50 transition"
-                  >
-                    Log In
-                  </button>
-                  <button
-                    onClick={navigateToSignupOrganization}
-                    className="w-full px-6 py-4 text-center bg-black text-white rounded-lg hover:bg-gray-700 transition"
-                  >
-                    Join as an Organization
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <main className="flex-1 min-h-[90vh] flex items-center">
+      <main
+        id="main-content"
+        ref={mainContentRef}
+        className="flex-1 min-h-[90vh] flex items-center"
+        role="main"
+        aria-label="Main content"
+      >
         <div className="container mx-auto px-4 sm:px-10 py-8 md:py-20 overflow-hidden">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center md:items-start ">
-            <div className="text-center md:text-left space-y-6 order-2 md:order-1 md:mt-5">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center md:items-start">
+            <div className="ml-5 pt-10 text-center md:text-left space-y-6 order-2 md:order-1 md:mt-5">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
                 Streamline Team Tasks, Boost Productivity
               </h1>
@@ -161,44 +121,66 @@ const LandingPage: React.FC = () => {
                 and track progress with intuitive, powerful tools.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
+              <div
+                className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4"
+                role="group"
+                aria-label="Call to action buttons"
+              >
                 <button
                   onClick={navigateToDemo}
-                  className="w-full sm:w-auto text-gray-700 border border-gray-900 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full sm:w-auto text-gray-700 border border-gray-900 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                  aria-label="Request a demo"
                 >
                   Request Demo
                 </button>
                 <button
                   onClick={navigateToSignupUser}
-                  className="w-full sm:w-auto bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors shadow-lg"
+                  className="w-full sm:w-auto bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                  aria-label="Get started as a user"
                 >
                   Get Started as User
                 </button>
               </div>
 
-              <div className="flex flex-row gap-2 sm:gap-6 justify-center md:justify-start pt-6 text-gray-600">
-                <div className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2">
-                  <Users className="text-gray-800" size={20} />
-                  <span className="text-center md:text-left">100+ Clients</span>
+              <div
+                className="flex flex-row gap-2 sm:gap-6 justify-center md:justify-start pt-6 text-gray-600"
+                role="list"
+                aria-label="Key statistics"
+              >
+                <div
+                  className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2"
+                  role="listitem"
+                >
+                  <Users className="text-gray-800" size={20} aria-hidden="true" />
+                  <span>100+ Clients</span>
                 </div>
-                <div className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2">
-                  <TimerIcon className="text-gray-800" size={20} />
-                  <span className="text-center md:text-left">25% Increase in Efficiency</span>
+                <div
+                  className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2"
+                  role="listitem"
+                >
+                  <TimerIcon className="text-gray-800" size={20} aria-hidden="true" />
+                  <span>25% Increase in Efficiency</span>
                 </div>
-                <div className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2">
-                  <Clock className="text-gray-800" size={20} />
-                  <span className="text-center md:text-left">Saves 10+ Hours Weekly</span>
+                <div
+                  className="flex flex-col items-center md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2"
+                  role="listitem"
+                >
+                  <Clock className="text-gray-800" size={20} aria-hidden="true" />
+                  <span>Saves 10+ Hours Weekly</span>
                 </div>
               </div>
-
             </div>
 
             <div className="order-1 md:order-2">
               <div className="bg-gray-950 rounded-2xl p-2 md:p-3 lg:p-3 shadow-2xl md:w-[65vw]">
                 <img
                   src="/image.png"
-                  alt="Taskify Dashboard"
-                  className="rounded-lg shadow-xl w-full h-auto object-cover"
+                  alt="Synapse dashboard showing task management interface with various features and analytics"
+                  className={`rounded-lg shadow-xl w-full h-auto object-cover ${imagesLoaded ? 'opacity-100' : 'opacity-0'
+                    } transition-opacity duration-300`}
+                  loading="lazy"
+                  width="800"
+                  height="600"
                 />
               </div>
             </div>
@@ -206,14 +188,20 @@ const LandingPage: React.FC = () => {
         </div>
       </main>
 
-      <section className="py-16 sm:py-20 px-5">
+      <section
+        className="py-16 sm:py-20 px-5"
+        aria-labelledby="features-heading"
+      >
         <div className="container mx-auto max-w-full lg:max-w-full">
           <div className="flex flex-col gap-12 items-center">
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden w-full lg:w-[85%] h-[50vh]">
               <img
                 src="https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850133/my-profit-tutor-ZfRWq1bRisE-unsplash_gmmrye.jpg"
                 className="w-full h-full object-cover"
-                alt="Taskify Solution"
+                alt="Team collaborating on Synapse platform"
+                loading="lazy"
+                width="1200"
+                height="800"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
                 <div className="absolute bottom-0 p-6 sm:p-8 text-white">
@@ -224,10 +212,13 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-10 w-full lg:w-[85%]">
-              <h2 className="text-4xl font-bold text-gray-900">
-                Meet Synapse: Your Organisation's Command Center
 
+            <div className="space-y-10 w-full lg:w-[85%]">
+              <h2
+                id="features-heading"
+                className="text-4xl font-bold text-gray-900"
+              >
+                Meet Synapse: Your Organisation's Command Center
                 <p className="text-xl text-gray-600 mt-3 font-normal">
                   Transform chaos into clarity with our intelligent task
                   management platform. Built for modern teams who value efficiency
@@ -235,10 +226,18 @@ const LandingPage: React.FC = () => {
                 </p>
               </h2>
 
-              <div className="grid sm:grid-cols-2 gap-10">
+              <div
+                className="grid sm:grid-cols-2 gap-10"
+                role="list"
+                aria-label="Key features"
+              >
                 {features.slice(0, 4).map((feature, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-4 rounded-xl bg-gray-100 hover:bg-zinc-100 transition-colors">
-                    <div className="bg-black rounded-full p-3 text-white">
+                  <div
+                    key={index}
+                    className="flex items-start space-x-3 p-4 rounded-xl bg-gray-100 hover:bg-zinc-100 transition-colors"
+                    role="listitem"
+                  >
+                    <div className="bg-black rounded-full p-3 text-white" aria-hidden="true">
                       {React.createElement(icons[index], { size: 24 })}
                     </div>
                     <div className="space-y-2">
@@ -255,10 +254,16 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="bg-gray-50 py-16 sm:py-20 px-4">
+      <section
+        className="bg-gray-50 py-16 sm:py-20 px-4"
+        aria-labelledby="how-it-works-heading"
+      >
         <div className="container mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2
+              id="how-it-works-heading"
+              className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4"
+            >
               How Synapse Works
             </h2>
             <p className="text-lg sm:text-xl text-gray-600">
@@ -272,43 +277,62 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-
-
-      <section className="relative py-16 sm:py-20">
+      <section
+        className="relative"
+        aria-labelledby="cta-heading"
+      >
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">
+          <PricingSection />
+
+          <div className="max-w-3xl mx-auto text-center my-20">
+            <h2
+              id="cta-heading"
+              className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6"
+            >
               Ready to Transform Your Organisation?
             </h2>
             <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8">
-              Join hundereds of Organisation already using Synapse to boost their
+              Join hundreds of organisations already using Synapse to boost their
               productivity.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              role="group"
+              aria-label="Call to action buttons"
+            >
               <button
                 onClick={navigateToDemo}
                 className="px-8 py-4 bg-white text-black border-2 border-black rounded-lg 
-                  hover:bg-gray-50 transition-colors"
+                  hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                aria-label="Watch demo video"
               >
                 Watch Demo
               </button>
               <button
                 onClick={navigateToSignupUser}
                 className="px-8 py-4 bg-black text-white rounded-lg hover:bg-gray-800 
-                  transition-colors shadow-lg"
+                  transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                aria-label="Start free trial"
               >
                 Start Free Trial
               </button>
             </div>
+
           </div>
         </div>
       </section>
 
-      <footer className="bg-black text-white py-12 sm:py-16">
+      <footer
+        className="bg-black text-white py-12 sm:py-16"
+        role="contentinfo"
+      >
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid gap-8 sm:gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-6">
-              <div className="flex items-center space-x-2">
+              <div
+                className="flex items-center space-x-2"
+                role="banner"
+              >
                 <span className="bg-white py-1 px-2 font-bold text-black rounded-2xl">
                   Syn
                 </span>
@@ -321,7 +345,10 @@ const LandingPage: React.FC = () => {
             </div>
 
             {quickLinks.map((section, index) => (
-              <div key={index}>
+              <nav
+                key={index}
+                aria-label={section.title}
+              >
                 <h4 className="text-lg font-semibold mb-4 text-white">
                   {section.title}
                 </h4>
@@ -330,15 +357,16 @@ const LandingPage: React.FC = () => {
                     <li key={linkIndex}>
                       <a
                         href="#"
-                        className="text-gray-400 hover:text-white transition-colors"
+                        className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
                       >
                         {link}
                       </a>
                     </li>
                   ))}
                 </ul>
-              </div>
+              </nav>
             ))}
+
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end w-full pt-12 sm:pt-16 mt-8 sm:mt-10 border-t border-gray-500 gap-8">
@@ -350,24 +378,46 @@ const LandingPage: React.FC = () => {
                 Subscribe to our newsletter for product updates and productivity
                 tips.
               </p>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-2 rounded-l-lg bg-gray-800 text-white 
-    focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              <form
+                className="flex"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                }}
+                aria-label="Newsletter subscription form"
+              >
+                <div className="relative flex-1">
+                  <label htmlFor="email-input" className="sr-only">
+                    Email address
+                  </label>
+                  <input
+                    id="email-input"
+                    type="email"
+                    placeholder="Enter your email"
+                    required
+                    aria-required="true"
+                    className="w-full px-4 py-2 rounded-l-lg bg-gray-800 text-white 
+            focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-invalid="false"
+                  />
+                </div>
                 <button
+                  type="submit"
                   className="bg-white text-black px-4 py-2 rounded-r-lg 
-    hover:bg-gray-200 transition-colors"
+          hover:bg-gray-200 transition-colors focus:outline-none 
+          focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+                  aria-label="Subscribe to newsletter"
                 >
                   Send
                 </button>
-              </div>
+              </form>
             </div>
 
-            <div className="flex flex-col space-y-4  ">
-              <div className="flex space-x-4 mb-4 md:mb-0 justify-end">
+            <div className="flex flex-col space-y-4">
+              <div
+                className="flex space-x-4 mb-4 md:mb-0 justify-end"
+                role="list"
+                aria-label="Social media links"
+              >
                 {socialLinks.map((social, index) => {
                   let Icon;
                   switch (social.name) {
@@ -388,9 +438,15 @@ const LandingPage: React.FC = () => {
                     <a
                       key={index}
                       href={social.href}
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="text-gray-400 hover:text-white transition-colors 
+              focus:outline-none focus:ring-2 focus:ring-offset-2 
+              focus:ring-gray-900"
+                      aria-label={`Visit our ${social.name} page`}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      role="listitem"
                     >
-                      <Icon size={20} />
+                      <Icon size={20} aria-hidden="true" />
                     </a>
                   );
                 })}
@@ -406,4 +462,5 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPage;
+const PerformanceOptimizedLandingPage = React.memo(LandingPage);
+export default PerformanceOptimizedLandingPage;

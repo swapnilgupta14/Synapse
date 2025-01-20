@@ -21,7 +21,8 @@ const Header: React.FC<HeaderProps> = ({ darkMode = false }) => {
     <header className={`sticky top-0 z-50 ${darkMode ? 'bg-black' : 'bg-white'} shadow-sm`}>
       <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => navigate("/")}>
             <span className={`${darkMode ? 'bg-white text-black' : 'bg-black text-white'} py-1 px-2 font-bold rounded-2xl`}>
               SYN
             </span>
@@ -37,13 +38,13 @@ const Header: React.FC<HeaderProps> = ({ darkMode = false }) => {
             <div className="flex space-x-4">
               <button
                 onClick={navigateToLogin}
-                className={`px-6 py-2.5 ${textColor} border-2 ${borderColor} rounded-lg ${hoverBg} transition font-medium`}
+                className={`px-5 py-1.5 ${textColor} border-2 ${borderColor} rounded-lg ${hoverBg} transition font-medium`}
               >
                 Log In
               </button>
               <button
                 onClick={navigateToSignupOrganization}
-                className={`px-6 py-2.5 ${darkMode ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'} rounded-lg transition font-medium`}
+                className={`px-5 py-1.5 ${darkMode ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'} rounded-lg transition font-medium`}
               >
                 Join as an Organization
               </button>

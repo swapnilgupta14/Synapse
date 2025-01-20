@@ -25,8 +25,8 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
+    "react-hot-toast": "^2.5.1",
     "react-router-dom": "^6.28.0",
-    "react-toastify": "^10.0.6",
     "recharts": "^2.13.3",
     "redux-persist": "^6.0.0"
   },

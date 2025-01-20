@@ -8,21 +8,23 @@ import {
 } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './redux/store';
 import { setCredentials, finishInitialLoad } from './redux/reducers/authSlice';
-import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
-import { adminRoutes } from './routes/adminRoutes';
-import { organisationRoutes } from './routes/organisationRoutes';
 import { preloadRoute } from './utils/preload';
-import ProtectedRoute from './components/ProtectedRoute';
 import { ProjectProvider } from './context/ProjectContext';
 import { TeamProvider } from './context/TeamContext';
 import { AuthProvider } from './context/AuthContext';
 import { verifyToken, verifyOrgToken } from './api/fetch';
 
-const LandingPage = lazy(() => import('./LandingPage'));
-const Auth = lazy(() => import('./pages/auth'));
-const Dashboard = lazy(() => import('./pages/dashboard'));
+import LandingPage from './pages/landingPage';
+import Auth from './pages/authentication/auth';
+import Dashboard from './pages/dashboard';
+
+import { adminRoutes } from './routes/adminRoutes';
+import { organisationRoutes } from './routes/organisationRoutes';
 const UserDashboard = lazy(() => import('./pages/dashboards/UserDashboard'));
+
+import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const DashboardRedirect: React.FC = () => {
     const { user } = useAppSelector((state) => state.auth);

@@ -1,8 +1,8 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
+import AllTasks from '../pages/dashboards/AdminDashboard/allTasks';
 const AdminDashboard = lazy(() => import('../pages/dashboards/AdminDashboard'));
-const AllTasks = lazy(() => import('../pages/dashboards/AdminDashboard/allTasks'));
 const AllProjects = lazy(() => import('../pages/dashboards/AdminDashboard/allProjects'));
 const AllUsers = lazy(() => import('../pages/dashboards/AdminDashboard/allUsers'));
 const Analytics = lazy(() => import('../pages/dashboards/AdminDashboard/analytics'));

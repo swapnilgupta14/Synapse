@@ -30,7 +30,10 @@ const ProjectsComponent: React.FC = () => {
     const handleCreateProject = async () => {
         if (!newProject.name || !user?.organisationId) return;
 
+        const customId = new Date().getTime()
         await createProject({
+            projectId: customId,
+            id: customId,
             name: newProject.name,
             description: newProject.description,
             organisationId: user.organisationId,

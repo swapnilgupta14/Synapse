@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import { loadFromLocalStorage } from "../../../utils/localStorage";
 import { Shield, Mail, Calendar } from "lucide-react";
 import { RoleType, User } from "../../../types";
 import ProfilePopup from "../../../components/popups/ProfilePopup";
+import userServices from "../../../api/services/userServices";
 
 const UserAvatar = ({ username }: { username: string }) => {
-
-
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -31,10 +28,14 @@ const AllUsers = () => {
 
 
   useEffect(() => {
-    const users = loadFromLocalStorage("SignedUpUsers", []);
-    if (users) {
-      setAllUsers(users);
+    const getUsers = async () => {
+      const res = await userServices.getAllUsers();
+      if (res) {
+        setAllUsers(res);
+      }
     }
+
+    getUsers();
   }, []);
 
   const getRoleColor = (role: RoleType) => {
