@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
   X, Users, Calendar, BarChart2, UserCircle, Tag,
   Edit, Save, Trash2, Clock, CheckCircle2, Archive, Eye
@@ -16,7 +16,7 @@ interface ProjectDetailsProps {
   onClose: () => void;
 }
 
-const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose }) => {
+const ProjectDetailsView: React.FC<ProjectDetailsProps> = memo(({ project, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [projectTeams, setProjectTeams] = useState<Team[]>([]);
@@ -360,6 +360,7 @@ const ProjectDetailsView: React.FC<ProjectDetailsProps> = ({ project, onClose })
       </div>
     </div>
   );
-};
+});
 
+ProjectDetailsView.displayName = "ProjectDetailsView";
 export default ProjectDetailsView;

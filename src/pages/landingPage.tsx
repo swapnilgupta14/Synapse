@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "react-query";
 import { Users, Clock, TimerIcon } from "lucide-react";
 import {
   CheckCircle,
@@ -35,12 +36,36 @@ interface SocialLink {
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  // const [isLoading, setIsLoading] = useState(true);
-  const [features, setFeatures] = useState<Feature[]>([]);
-  const [quickLinks, setQuickLinks] = useState<QuickLinkSection[]>([]);
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-
   const mainContentRef = React.useRef<HTMLDivElement>(null);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  // React Query hooks
+  const { data: features = [] } = useQuery<Feature[]>(
+    'features',
+    fetchFeatures,
+    {
+      staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+      cacheTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes
+    }
+  );
+
+  const { data: quickLinks = [] } = useQuery<QuickLinkSection[]>(
+    'quickLinks',
+    fetchQuickLinks,
+    {
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 30 * 60 * 1000,
+    }
+  );
+
+  const { data: socialLinks = [] } = useQuery<SocialLink[]>(
+    'socialLinks',
+    fetchSocialLinks,
+    {
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 30 * 60 * 1000,
+    }
+  );
 
   const icons: LucideIcon[] = [
     CheckCircle,
@@ -60,31 +85,6 @@ const LandingPage: React.FC = () => {
   };
 
   const currentYear = new Date().getFullYear();
-
-  const loadData = async (): Promise<void> => {
-    try {
-      // setIsLoading(true);
-      const [featuresData, quickLinksData, socialLinksData] = await Promise.all([
-        fetchFeatures(),
-        fetchQuickLinks(),
-        fetchSocialLinks(),
-      ]);
-
-      setFeatures(featuresData);
-      setQuickLinks(quickLinksData);
-      setSocialLinks(socialLinksData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      // setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   useEffect(() => {
     const img = new Image();
@@ -229,11 +229,7 @@ const LandingPage: React.FC = () => {
                 </p>
               </h2>
 
-              <div
-                className="grid sm:grid-cols-2 gap-10"
-                role="list"
-                aria-label="Key features"
-              >
+              <div className="grid sm:grid-cols-2 gap-10" role="list" aria-label="Key features">
                 {features.slice(0, 4).map((feature, index) => (
                   <div
                     key={index}

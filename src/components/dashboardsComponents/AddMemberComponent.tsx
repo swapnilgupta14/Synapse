@@ -1,4 +1,5 @@
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, memo } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import {
   User as UserIcon,
   UserPlus,
@@ -8,7 +9,7 @@ import {
   Building2,
   Loader2
 } from "lucide-react";
-import { User, Organisation } from "../../types";
+import { User } from "../../types";
 import userServices from "../../api/services/userServices";
 import orgServices from "../../api/services/orgServices";
 import toast from "react-hot-toast";
@@ -24,78 +25,108 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = memo(({
 }) => {
   if (!organisationId) return null;
 
+  const queryClient = useQueryClient();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchEmail, setSearchEmail] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [orgMembers, setOrgMembers] = useState<User[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [organisation, setOrganisation] = useState<Organisation | null>(null);
-
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isAddingMembers, setIsAddingMembers] = useState(false);
-  const [removingMembers, setRemovingMembers] = useState<number[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const fetchOrganisation = async () => {
-    try {
-      const org = await orgServices.getOrgById(organisationId);
-      if (!org) {
-        setIsPopupOpen(false);
-        return;
+  const { data: organisation, isLoading: isLoadingOrg } = useQuery(
+    ['organisation', organisationId],
+    () => orgServices.getOrgById(organisationId),
+    {
+      enabled: isPopupOpen,
+    }
+  );
+
+  const { data: allUsers = [] } = useQuery(
+    'users',
+    userServices.getAllUsers,
+    {
+      enabled: isPopupOpen,
+    }
+  );
+
+  const { data: orgMembers = [], isLoading: isLoadingMembers } = useQuery(
+    ['orgMembers', organisationId],
+    async () => {
+      if (!organisation?.members) return [];
+      const memberPromises = organisation.members.map((userId: number) =>
+        userServices.getUserById(userId)
+      );
+      const members = await Promise.all(memberPromises);
+      return members.filter(Boolean);
+    },
+    {
+      enabled: !!organisation && isPopupOpen,
+    }
+  );
+
+  // Mutations
+  const addMembersMutation = useMutation(
+    async () => {
+      if (!organisation || selectedUsers.length === 0) return;
+
+      const updatedMembers = [
+        ...(organisation.members || []),
+        ...selectedUsers.map(user => user.id)
+      ];
+
+      await orgServices.updateOrg(organisation.organisationId, {
+        members: updatedMembers
+      });
+
+      await Promise.all(
+        selectedUsers.map(user =>
+          userServices.updateUser(user.id, {
+            organisationId: organisation.organisationId
+          })
+        )
+      );
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organisation', organisationId]);
+        queryClient.invalidateQueries(['orgMembers', organisationId]);
+        queryClient.invalidateQueries('users');
+        onAddMembers?.(selectedUsers);
+        setSelectedUsers([]);
+        setSearchEmail("");
+        setFilteredUsers([]);
+        toast.success("Members added successfully!");
+      },
+      onError: () => {
+        toast.error("Failed to add members!");
       }
-      setOrganisation(org);
-      return org;
-    } catch (error) {
-      console.error('Error fetching organisation:', error);
     }
-  };
+  );
 
-  const fetchAllUsers = async () => {
-    try {
-      const users = await userServices.getAllUsers();
-      setAllUsers(users);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
+  const removeMemberMutation = useMutation(
+    async (userId: number) => {
+      if (!organisation) return;
 
-  const fetchOrgMembers = async (org?: Organisation) => {
-    try {
-      const currentOrg = org || organisation;
-      if (currentOrg?.members) {
-        const memberPromises = currentOrg.members.map(async (userId) => {
-          const user = await userServices.getUserById(userId);
-          return user;
-        });
-        const members = await Promise.all(memberPromises);
-        setOrgMembers(members.filter(Boolean));
+      const updatedMembers = organisation.members?.filter((id: number) => id !== userId) || [];
+      await orgServices.updateOrg(organisation.organisationId, {
+        members: updatedMembers
+      });
+
+      await userServices.updateUser(userId, {
+        organisationId: undefined
+      });
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organisation', organisationId]);
+        queryClient.invalidateQueries(['orgMembers', organisationId]);
+        queryClient.invalidateQueries('users');
+        toast.success("Member removed successfully!");
+      },
+      onError: () => {
+        toast.error("Failed to remove member!");
       }
-    } catch (error) {
-      console.error('Error fetching org members:', error);
     }
-  };
-
-  useEffect(() => {
-    const initializeData = async () => {
-      setIsInitialLoading(true);
-      try {
-        const org = await fetchOrganisation();
-        if (org) {
-          await Promise.all([
-            fetchAllUsers(),
-            fetchOrgMembers(org)
-          ]);
-        }
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
-
-    if (isPopupOpen) {
-      initializeData();
-    }
-  }, [organisationId, isPopupOpen]);
+  );
 
   const handleSearchUsers = async (email: string) => {
     setSearchEmail(email);
@@ -104,7 +135,7 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = memo(({
     setIsSearching(true);
     try {
       const filtered = allUsers.filter(
-        (user) =>
+        (user: User) =>
           user.email.toLowerCase().includes(email.toLowerCase()) &&
           user.id !== organisation.ownerId &&
           user?.role !== "Admin" &&
@@ -124,73 +155,6 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = memo(({
     );
   };
 
-  const handleAddMembers = async () => {
-    if (!organisation || selectedUsers.length === 0) return;
-
-    setIsAddingMembers(true);
-    try {
-      const updatedMembers = [
-        ...(organisation.members || []),
-        ...selectedUsers.map(user => user.id)
-      ];
-
-      await orgServices.updateOrg(organisation.organisationId, {
-        members: updatedMembers
-      });
-
-      for (const user of selectedUsers) {
-        await userServices.updateUser(user.id, {
-          organisationId: organisation.organisationId
-        });
-      }
-
-      const updatedOrg = await fetchOrganisation();
-      if (updatedOrg) {
-        await fetchOrgMembers(updatedOrg);
-        await fetchAllUsers();
-      }
-
-      onAddMembers?.(selectedUsers);
-      setSelectedUsers([]);
-      setSearchEmail("");
-      setFilteredUsers([]);
-      toast.success("Members added successfully!");
-    } catch (error) {
-      console.error('Error adding members:', error);
-      toast.error("Failed to add members!");
-    }
-    finally {
-      setIsAddingMembers(false);
-    }
-  };
-
-  const handleRemoveMember = async (userId: number) => {
-    if (!organisation) return;
-
-    setRemovingMembers(prev => [...prev, userId]);
-    try {
-      const updatedMembers = organisation.members?.filter(id => id !== userId) || [];
-      await orgServices.updateOrg(organisation.organisationId, {
-        members: updatedMembers
-      });
-
-      await userServices.updateUser(userId, {
-        organisationId: undefined
-      });
-
-      const updatedOrg = await fetchOrganisation();
-      if (updatedOrg) {
-        await fetchOrgMembers(updatedOrg);
-        await fetchAllUsers();
-        toast.success("Member removed successfully!");
-      }
-    } catch (error) {
-      toast.error("Failed to remove member!");
-    } finally {
-      setRemovingMembers(prev => prev.filter(id => id !== userId));
-    }
-  };
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -199,6 +163,8 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = memo(({
       day: "numeric",
     });
   };
+
+  const isInitialLoading = isLoadingOrg || isLoadingMembers;
 
   return (
     <div>
@@ -279,14 +245,14 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = memo(({
                     </div>
 
                     <button
-                      onClick={handleAddMembers}
-                      disabled={selectedUsers.length === 0 || isAddingMembers}
-                      className={`w-[120px] py-1 rounded transition flex items-center justify-center ${selectedUsers.length > 0 && !isAddingMembers
+                      onClick={() => addMembersMutation.mutate()}
+                      disabled={selectedUsers.length === 0 || addMembersMutation.isLoading}
+                      className={`w-[120px] py-1 rounded transition flex items-center justify-center ${selectedUsers.length > 0 && !addMembersMutation.isLoading
                         ? "bg-black text-white hover:bg-gray-800"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
                     >
-                      {isAddingMembers ? (
+                      {addMembersMutation.isLoading ? (
                         <Loader2 className="animate-spin" size={16} />
                       ) : (
                         <>Add {selectedUsers.length > 0 ? `(${selectedUsers.length})` : ""}</>
@@ -339,14 +305,14 @@ const AddMembersComponent: React.FC<AddMembersComponentProps> = memo(({
                                 {member.role}
                               </span>
                               <button
-                                onClick={() => handleRemoveMember(member.id)}
-                                disabled={removingMembers.includes(member.id)}
-                                className={`${removingMembers.includes(member.id)
+                                onClick={() => removeMemberMutation.mutate(member.id)}
+                                disabled={removeMemberMutation.isLoading}
+                                className={`${removeMemberMutation.isLoading
                                   ? "bg-gray-400 cursor-not-allowed"
                                   : "bg-red-500 hover:bg-red-700"
                                   } transition text-white p-2 rounded-full`}
                               >
-                                {removingMembers.includes(member.id) ? (
+                                {removeMemberMutation.isLoading ? (
                                   <Loader2 className="animate-spin" size={15} />
                                 ) : (
                                   <Trash2 size={15} />

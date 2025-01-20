@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
+import { useQuery, useMutation } from 'react-query';
 import { X, Loader2, Users } from 'lucide-react';
 import { Team, Project } from '../../types';
 import teamServices from '../../api/services/teamServices';
@@ -12,7 +13,7 @@ interface AddTeamsComponentProps {
     onTeamAdded?: () => void;
 }
 
-const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
+const AddTeamsComponent: React.FC<AddTeamsComponentProps> = memo(({
     organisationId,
     isEditing = false,
     existingTeam,
@@ -26,9 +27,6 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
     const [projectId, setProjectId] = useState<number | null>(null);
     const [description, setDescription] = useState('');
     const [teamManagerId, setTeamManagerId] = useState<number | null>(null);
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (isEditing && existingTeam) {
@@ -40,23 +38,51 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
         }
     }, [isEditing, existingTeam]);
 
-    useEffect(() => {
-        const fetchProjectsList = async () => {
-            if (!isOpen) return;
+    const { data: projects = [], isLoading } = useQuery(
+        'projects',
+        projectServices.getProjects,
+        {
+            enabled: isOpen,
+        }
+    );
 
-            try {
-                setIsLoading(true);
-                const projectsData = await projectServices.getProjects();
-                setProjects(projectsData);
-            } catch (error) {
-                console.error('Error fetching projects:', error);
-            } finally {
-                setIsLoading(false);
+    const teamMutation = useMutation(
+        async (teamData: Partial<Team>) => {
+            if (isEditing && existingTeam?.teamId) {
+                await teamServices.updateTeam(existingTeam.teamId, teamData as Team);
+
+                if (existingTeam.projectId !== projectId) {
+                    if (projectId !== null) {
+                        await teamServices.assignTeamToProject(existingTeam.teamId, projectId);
+                    } else if (existingTeam.projectId) {
+                        await teamServices.removeTeamFromProject(existingTeam.teamId);
+                    }
+                }
+                return teamData;
+            } else {
+                const newTeam = await teamServices.createTeam({
+                    ...teamData,
+                    createdAt: new Date().toISOString()
+                } as Team);
+
+                if (projectId !== null && newTeam.teamId) {
+                    await teamServices.assignTeamToProject(newTeam.teamId, projectId);
+                }
+                return newTeam;
             }
-        };
-
-        fetchProjectsList();
-    }, [isOpen]);
+        },
+        {
+            onSuccess: () => {
+                onTeamAdded?.();
+                resetForm();
+                setIsOpen(false);
+                onClose?.();
+            },
+            onError: () => {
+                alert('Failed to save team');
+            }
+        }
+    );
 
     const handleProjectChange = (newProjectId: string) => {
         setProjectId(newProjectId ? Number(newProjectId) : null);
@@ -68,50 +94,19 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
             return;
         }
 
-        setIsSaving(true);
-        try {
-            const teamData: Partial<Team> = {
-                name: teamName,
-                organisationId,
-                projectId: projectId || undefined,
-                description: description || undefined,
-                teamManagerId: teamManagerId || undefined,
-                members: existingTeam?.members,
-                createdAt: existingTeam?.createdAt,
-                id: existingTeam?.id,
-                teamId: existingTeam?.teamId,
-            };
+        const teamData: Partial<Team> = {
+            name: teamName,
+            organisationId,
+            projectId: projectId || undefined,
+            description: description || undefined,
+            teamManagerId: teamManagerId || undefined,
+            members: existingTeam?.members,
+            createdAt: existingTeam?.createdAt,
+            id: existingTeam?.id,
+            teamId: existingTeam?.teamId,
+        };
 
-            if (isEditing && existingTeam?.teamId) {
-                await teamServices.updateTeam(existingTeam.teamId, teamData as Team);
-                if (existingTeam.projectId !== projectId) {
-                    if (projectId !== null) {
-                        await teamServices.assignTeamToProject(existingTeam.teamId, projectId);
-                    } else if (existingTeam.projectId) {
-                        await teamServices.removeTeamFromProject(existingTeam.teamId);
-                    }
-                }
-            } else {
-                const newTeam = await teamServices.createTeam({
-                    ...teamData,
-                    createdAt: new Date().toISOString()
-                } as Team);
-
-                if (projectId !== null && newTeam.teamId) {
-                    await teamServices.assignTeamToProject(newTeam.teamId, projectId);
-                }
-            }
-
-            onTeamAdded?.();
-            resetForm();
-            setIsOpen(false);
-            onClose?.();
-        } catch (error) {
-            console.error('Error handling team:', error);
-            alert('Failed to save team');
-        } finally {
-            setIsSaving(false);
-        }
+        teamMutation.mutate(teamData);
     };
 
     const resetForm = () => {
@@ -175,7 +170,7 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                                     onChange={(e) => setTeamName(e.target.value)}
                                     placeholder="Enter team name"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                                    disabled={isSaving}
+                                    disabled={teamMutation.isLoading}
                                 />
                             </div>
 
@@ -191,10 +186,10 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                                     value={projectId || ""}
                                     onChange={(e) => handleProjectChange(e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                                    disabled={isLoading || isSaving}
+                                    disabled={isLoading || teamMutation.isLoading}
                                 >
                                     <option value="">Select a project</option>
-                                    {projects.map((project) => (
+                                    {projects.map((project: Project) => (
                                         <option
                                             key={project.projectId ?? project.id}
                                             value={project.projectId ?? project.id}
@@ -219,7 +214,7 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                                     placeholder="Optional team description"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                                     rows={3}
-                                    disabled={isSaving}
+                                    disabled={teamMutation.isLoading}
                                 />
                             </div>
                         </div>
@@ -228,16 +223,16 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
                             <button
                                 onClick={handleClose}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black"
-                                disabled={isSaving}
+                                disabled={teamMutation.isLoading}
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={isSaving}
+                                disabled={teamMutation.isLoading}
                                 className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-black flex items-center"
                             >
-                                {isSaving ? (
+                                {teamMutation.isLoading ? (
                                     <>
                                         <Loader2 className="animate-spin mr-2" size={14} />
                                         {isEditing ? 'Updating...' : 'Adding...'}
@@ -252,6 +247,7 @@ const AddTeamsComponent: React.FC<AddTeamsComponentProps> = ({
             )}
         </>
     );
-};
+});
 
+AddTeamsComponent.displayName = "AddTeamsComponent";
 export default AddTeamsComponent;
