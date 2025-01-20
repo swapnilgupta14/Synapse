@@ -39,13 +39,12 @@ const LandingPage: React.FC = () => {
   const mainContentRef = React.useRef<HTMLDivElement>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // React Query hooks
   const { data: features = [] } = useQuery<Feature[]>(
     'features',
     fetchFeatures,
     {
-      staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-      cacheTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes
+      staleTime: 5 * 60 * 1000, 
+      cacheTime: 30 * 60 * 1000,
     }
   );
 
