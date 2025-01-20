@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from 'react-query';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   PieChart, Pie, Cell, ResponsiveContainer
@@ -7,7 +8,7 @@ import {
   Users, Briefcase, Building2, UserPlus,
   UserX, Crown, CheckCircle2, Clock, ListTodo
 } from 'lucide-react';
-import { Task, User, Project, Team } from '../../../types';
+import { Task, User } from '../../../types';
 import axiosInstance from '../../../api/axiosInstance';
 import { useAppSelector } from '../../../redux/store';
 import teamServices from '../../../api/services/teamServices';
@@ -52,17 +53,6 @@ const InfoCard: React.FC<InfoCardProps> = ({ icon, label, value }) => (
 );
 
 const Analytics: React.FC = () => {
-  const [statistics, setStatistics] = useState<TaskStatistics | null>(null);
-  const [teams, setTeams] = useState<Team[]>([]);
-
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [memberCount, setMemberCount] = useState({
-    team_member: 0,
-    team_manager: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const { user } = useAppSelector((state) => state.auth);
 
   const getTaskCompletionTrend = (tasks: Task[]) => {
@@ -102,13 +92,11 @@ const Analytics: React.FC = () => {
     return Math.round(totalTime / completedTasks.length / (1000 * 60 * 60));
   };
 
-  const generateTaskStatistics = async (): Promise<TaskStatistics | null> => {
+  const generateTaskStatistics = async (tasks: Task[]): Promise<TaskStatistics> => {
     if (!user || user.role !== "Admin") {
       throw new Error("Unauthorized: Only Admins can access statistics.");
     }
 
-    const tasksResponse = await axiosInstance.get("/tasks");
-    const tasks: Task[] = tasksResponse.data;
     const now = new Date();
 
     return {
@@ -144,54 +132,55 @@ const Analytics: React.FC = () => {
     };
   };
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [statsRes, teamsRes, projectsRes, usersRes] = await Promise.all([
-        generateTaskStatistics(),
-        teamServices.getAllTeams(),
-        projectServices.getAllProjects(),
-        userServices.getAllUsers(),
-      ]);
-
-      if (statsRes) setStatistics(statsRes);
-      if (teamsRes) setTeams(teamsRes);
-      if (projectsRes) setProjects(projectsRes);
-      if (usersRes) {
-        setMemberCount({
-          team_member: usersRes.filter((user: User) => user.role === "Team Member").length,
-          team_manager: usersRes.filter((user: User) => user.role === "Team Manager").length,
-        });
-      }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
+  // React Query hooks
+  const { data: tasksData, error: tasksError } = useQuery(
+    'tasks',
+    async () => {
+      const response = await axiosInstance.get("/tasks");
+      return response.data;
     }
+  );
+
+  const { data: teams = [] } = useQuery(
+    'teams',
+    () => teamServices.getAllTeams()
+  );
+
+  const { data: projects = [] } = useQuery(
+    'projects',
+    () => projectServices.getAllProjects()
+  );
+
+  const { data: users } = useQuery(
+    'users',
+    () => userServices.getAllUsers()
+  );
+
+  const { data: statistics } = useQuery(
+    ['statistics', tasksData],
+    () => generateTaskStatistics(tasksData),
+    {
+      enabled: !!tasksData,
+    }
+  );
+
+  // Derived state
+  const memberCount = {
+    team_member: users?.filter((user: User) => user.role === "Team Member").length || 0,
+    team_manager: users?.filter((user: User) => user.role === "Team Manager").length || 0,
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-red-600">
-        Error: {error}
-      </div>
-    );
-  }
 
   const totalMembersInTeams = teams.reduce((acc, team) =>
     acc + (team?.members?.length || 0), 0
   );
+
+  if (tasksError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-600">
+        Error: {tasksError instanceof Error ? tasksError.message : 'An error occurred'}
+      </div>
+    );
+  }
 
   const priorityPieData = statistics ? [
     { name: 'High', value: statistics.highPriorityTasks },

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Outlet } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Card, CardContent } from '../../../components/ui/Card';
-import { Task} from '../../../types';
+import { Task } from '../../../types';
 import { useAppSelector } from '../../../redux/store';
 import TaskDetailPopup from '../../../components/popups/TaskDetailPopup';
 import { Trash2, Archive, AlertTriangle, X, LogOut, Trash, UsersIcon } from 'lucide-react';
@@ -10,12 +11,13 @@ import ProfilePopup from '../../../components/popups/ProfilePopup';
 import { logout } from '../../../redux/reducers/authSlice';
 import { taskServices } from '../../../api/services/taskServices';
 import { ArchiveDialog as ArchiveDialogComponent, ReassignDialog } from '../../../components/dashboardsComponents/ArchieveReassignDialog';
+import { toast } from 'react-hot-toast';
 
 const AdminDashboard: React.FC = () => {
+  const queryClient = useQueryClient();
   const dispatch = useDispatch();
   const { user } = useAppSelector(state => state.auth);
 
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -31,101 +33,134 @@ const AdminDashboard: React.FC = () => {
     toUserId: 0
   });
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  const fetchTasks = async () => {
-    try {
-      const response = await taskServices.getAllTasks();
-      setTasks(response);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
+  const { data: tasks = [] } = useQuery<Task[]>(
+    'tasks',
+    taskServices.getAllTasks,
+    {
+      onError: (error) => {
+        console.error('Error fetching tasks:', error);
+        toast.error('Failed to fetch tasks');
+      }
     }
-  };
+  );
 
-  type PriorityType = 'high' | 'medium' | 'low';
-
-  const handleBulkPriorityUpdate = async (priority: PriorityType) => {
-    try {
-      await taskServices.bulkUpdateTasks(selectedTasks, { priority });
-      await fetchTasks();
-      setSelectedTasks([]);
-      setShowBulkActions(false);
-    } catch (error) {
-      console.error('Error updating priorities:', error);
+  const updatePriorityMutation = useMutation(
+    (data: { taskIds: number[], priority: 'high' | 'medium' | 'low' }) =>
+      taskServices.bulkUpdateTasks(data.taskIds, { priority: data.priority }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('tasks');
+        setSelectedTasks([]);
+        setShowBulkActions(false);
+        toast.success('Priority updated successfully');
+      },
+      onError: (error) => {
+        console.error('Error updating priorities:', error);
+        toast.error('Failed to update priorities');
+      }
     }
+  );
+
+  const archiveTasksMutation = useMutation(
+    () => selectedTasks.length > 0
+      ? taskServices.archiveTasks(selectedTasks)
+      : taskServices.autoArchiveTasks(),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('tasks');
+        setShowArchiveDialog(false);
+        setSelectedTasks([]);
+        toast.success('Tasks archived successfully');
+      },
+      onError: (error) => {
+        console.error('Error archiving tasks:', error);
+        toast.error('Failed to archive tasks');
+      }
+    }
+  );
+
+  const reassignTasksMutation = useMutation(
+    () => taskServices.reassignSelectedTasks(
+      selectedTasks,
+      reassignData.fromUserId,
+      reassignData.toUserId
+    ),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('tasks');
+        setShowReassignDialog(false);
+        setSelectedTasks([]);
+        toast.success('Tasks reassigned successfully');
+      },
+      onError: (error) => {
+        console.error('Error reassigning tasks:', error);
+        toast.error('Failed to reassign tasks');
+      }
+    }
+  );
+
+  const deleteTaskMutation = useMutation(
+    (taskId: number) => taskServices.deleteTask(taskId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('tasks');
+        toast.success('Task deleted successfully');
+      },
+      onError: (error) => {
+        console.error('Error deleting task:', error);
+        toast.error('Failed to delete task');
+      }
+    }
+  );
+
+  const bulkDeleteMutation = useMutation(
+    (taskIds: number[]) => Promise.all(
+      taskIds.map(taskId => taskServices.deleteTask(taskId))
+    ),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('tasks');
+        setSelectedTasks([]);
+        setShowDeleteDialog(false);
+        toast.success('Tasks deleted successfully');
+      },
+      onError: (error) => {
+        console.error('Error deleting tasks:', error);
+        toast.error('Failed to delete tasks');
+      }
+    }
+  );
+
+  const handleBulkPriorityUpdate = (priority: 'high' | 'medium' | 'low') => {
+    updatePriorityMutation.mutate({ taskIds: selectedTasks, priority });
   };
 
   const handleArchiveTasks = async () => {
-    try {
-      if (selectedTasks.length > 0) {
-        await taskServices.archiveTasks(selectedTasks);
-      } else {
-        await taskServices.autoArchiveTasks();
-      }
-      await fetchTasks();
-      setShowArchiveDialog(false);
-      setSelectedTasks([]);
-    } catch (error) {
-      console.error('Error archiving tasks:', error);
-    }
+    await archiveTasksMutation.mutateAsync();
   };
 
   const handleReassignTasks = async () => {
-    try {
-      if (selectedTasks.length === 0) {
-        alert("Please select tasks to reassign");
-        return;
-      }
-      await taskServices.reassignSelectedTasks(
-        selectedTasks,
-        reassignData.fromUserId,
-        reassignData.toUserId
-      );
-      await fetchTasks();
-      setShowReassignDialog(false);
-      setSelectedTasks([]);
-    } catch (error) {
-      console.error('Error reassigning tasks:', error);
+    if (selectedTasks.length === 0) {
+      toast.error("Please select tasks to reassign");
+      return;
     }
+    reassignTasksMutation.mutate();
+  };
+
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selectedTasks);
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    deleteTaskMutation.mutate(taskId);
   };
 
   useEffect(() => {
-    const autoArchiveInterval = setInterval(async () => {
-      try {
-        await taskServices.autoArchiveTasks();
-        await fetchTasks();
-      } catch (error) {
-        console.error('Error in auto-archive:', error);
-      }
+    const autoArchiveInterval = setInterval(() => {
+      archiveTasksMutation.mutate();
     }, 1 * 60 * 60 * 1000);
     return () => clearInterval(autoArchiveInterval);
   }, []);
-
-  const handleBulkDelete = async () => {
-    try {
-      const deletePromises = selectedTasks.map(taskId =>
-        taskServices.deleteTask(taskId)
-      );
-      await Promise.all(deletePromises);
-      await fetchTasks();
-      setSelectedTasks([]);
-      setShowDeleteDialog(false);
-    } catch (error) {
-      console.error('Error deleting tasks:', error);
-    }
-  };
-
-  const handleDeleteTask = async (taskId: number) => {
-    try {
-      await taskServices.deleteTask(taskId);
-      await fetchTasks();
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      alert(error instanceof Error ? error.message : 'An unexpected error occurred');
-    }
-  };
 
   const BulkActionsDialog = () => {
     if (!showBulkActions) return null;

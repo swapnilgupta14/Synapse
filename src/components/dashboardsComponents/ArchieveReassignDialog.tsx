@@ -184,7 +184,7 @@ const ReassignDialog: React.FC<ReassignDialogProps> = ({
           </select>
 
           {reassignData.fromUserId && reassignData.toUserId && 
-           reassignData.fromUserId === reassignData.toUserId && (
+           reassignData.fromUserId === reassignData.toUserId ? (
             <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
               <div className="flex items-start gap-2">
                 <AlertCircle size={20} className="text-yellow-600 mt-0.5" />
@@ -193,7 +193,7 @@ const ReassignDialog: React.FC<ReassignDialogProps> = ({
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
 
           <button
             onClick={handleReassignTasks}

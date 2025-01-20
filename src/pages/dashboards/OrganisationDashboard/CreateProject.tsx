@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../redux/store";
 import { logout } from "../../../redux/reducers/authSlice";
 import { LogOut, Users, Trash2, Edit, Plus } from "lucide-react";
-import { Project, Team, User } from "../../../types";
+import { Team, User } from "../../../types";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 
 import AddMembersComponent from "../../../components/dashboardsComponents/AddMemberComponent";
 import ProjectsComponent from "../../../components/dashboardsComponents/ProjectComponent";
@@ -17,25 +18,46 @@ import projectServices from "../../../api/services/projectServices";
 
 const CreateProject: React.FC = () => {
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const { user } = useAppSelector((state) => state.auth);
-  const [teams, setTeams] = useState<Team[]>([]);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedTeamForMembers, setSelectedTeamForMembers] = useState<number | null>(null);
   const [profile, setProfile] = useState(false);
-  const [members, setMembers] = useState<User[]>([]);
-  const [organisationId, setOrganisationId] = useState<number | null>(null);
-  const [projectsMap, setProjectsMap] = useState<Map<number, string>>(new Map());
 
-  const fetchTeams = async (organisationId: number) => {
-    try {
-      const res = await teamServices.getTeamsByOrganisation(organisationId);
-      setTeams(res);
+  const { data: teams = [] } = useQuery<Team[]>(
+    ['teams', user?.organisationId],
+    () => teamServices.getTeamsByOrganisation(user?.organisationId!),
+    {
+      enabled: !!user?.organisationId,
+    }
+  );
 
-      // Fetch project names for all teams
-      const projectPromises = res
+  const { data: members = [] } = useQuery<User[]>(
+    ['orgMembers', user?.organisationId],
+    async () => {
+      const memberData = await getOrgMembers(user?.organisationId!);
+      return memberData.filter((member: User) => member.role !== 'Admin');
+    },
+    {
+      enabled: !!user?.organisationId,
+    }
+  );
+
+  const { data: organisation } = useQuery(
+    ['organisation', user?.organisationId],
+    () => orgServices.getOrgById(user?.organisationId!),
+    {
+      enabled: !!user?.organisationId,
+    }
+  );
+
+  const { data: projectsMap = new Map() } = useQuery<Map<number, string>>(
+    ['projects', teams],
+    async () => {
+      const projectPromises = teams
         .filter(team => team.projectId)
-        .map(team => fetchProjectById(team.projectId));
+        .map(team => projectServices.getProjectById(team.projectId));
 
       const projects = await Promise.all(projectPromises);
       const newProjectsMap = new Map<number, string>();
@@ -44,78 +66,45 @@ const CreateProject: React.FC = () => {
           newProjectsMap.set(project.projectId ?? project?.id, project.name);
         }
       });
-      setProjectsMap(newProjectsMap);
-    } catch (error) {
-      console.error('Error fetching teams:', error);
-      toast.error('Failed to fetch teams');
+      return newProjectsMap;
+    },
+    {
+      enabled: teams.length > 0,
     }
-  };
+  );
 
-  useEffect(() => {
-    if (user?.organisationId) {
-      fetchTeams(user.organisationId);
+  const deleteTeamMutation = useMutation(
+    (teamId: number) => teamServices.deleteTeam(teamId),
+    {
+      onSuccess: () => {
+        toast.success('Team deleted successfully');
+        queryClient.invalidateQueries(['teams', user?.organisationId]);
+      },
+      onError: () => {
+        toast.error('Failed to delete team');
+      },
     }
-  }, [user?.organisationId]);
-
-  const fetchOrganisationById = async (orgId: number) => {
-    try {
-      const org = await orgServices.getOrgById(orgId);
-      setOrganisationId(org?.id);
-      const memberData = await getOrgMembers(orgId);
-      const filterAdmin = memberData.filter((member: User) => member.role !== 'Admin');
-      setMembers(filterAdmin);
-    } catch (error) {
-      console.error('Error fetching organisation:', error);
-      toast.error('Failed to fetch organisation details');
-    }
-  };
-
-  useEffect(() => {
-    if (user?.organisationId) {
-      fetchOrganisationById(user.organisationId);
-    }
-  }, [user?.organisationId]);
+  );
 
   const handleEditTeam = (team: Team) => {
     setEditingTeam(team);
   };
 
-  const handleDeleteTeam = async (teamId: number) => {
-    try {
-      await teamServices.deleteTeam(teamId);
-      toast.success('Team deleted successfully');
-      if (user?.organisationId) {
-        fetchTeams(user.organisationId);
-      }
-    } catch (error) {
-      console.error('Error deleting team:', error);
-      toast.error('Failed to delete team');
-    }
+  const handleDeleteTeam = (teamId: number) => {
+    deleteTeamMutation.mutate(teamId);
   };
 
   const handleAddTeamMembers = (teamId: number) => {
     setSelectedTeamForMembers(teamId);
   };
 
-  const fetchProjectById = async (projectId: number): Promise<Project | null> => {
-    try {
-      return await projectServices.getProjectById(projectId);
-    } catch (error) {
-      console.error('Error fetching project:', error);
-      return null;
-    }
-  };
-
   const getProjectName = (projectId: number): string => {
-    console.log(projectsMap, "PROJECT_MAP")
     return projectsMap.get(projectId) || 'No Project';
   };
 
-  const handleTeamAdded = async () => {
-    if (user?.organisationId) {
-      toast.success('Team added successfully');
-      await fetchTeams(user.organisationId);
-    }
+  const handleTeamAdded = () => {
+    queryClient.invalidateQueries(['teams', user?.organisationId]);
+    toast.success('Team added successfully');
   };
 
   return (
@@ -144,7 +133,7 @@ const CreateProject: React.FC = () => {
             View Members <span className="font-semibold ml-1">({members.length})</span>
           </button>
 
-          <AddMembersComponent organisationId={organisationId} />
+          <AddMembersComponent organisationId={organisation?.id} />
 
           <button
             onClick={() => dispatch(logout())}
@@ -169,7 +158,7 @@ const CreateProject: React.FC = () => {
                 Teams ({teams.length})
               </h2>
               <AddTeamsComponent
-                organisationId={organisationId}
+                organisationId={organisation?.id}
                 isEditing={!!editingTeam}
                 existingTeam={editingTeam || undefined}
                 onClose={() => setEditingTeam(null)}

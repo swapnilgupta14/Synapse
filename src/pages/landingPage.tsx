@@ -181,6 +181,7 @@ const LandingPage: React.FC = () => {
                   loading="lazy"
                   width="600"
                   height="400"
+                // style={{ aspectRatio: '4/3' }}
                 />
               </div>
             </div>

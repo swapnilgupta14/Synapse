@@ -10,6 +10,7 @@ import {
     getOrgByCredentials
 } from '../../api/fetch';
 import toast from 'react-hot-toast';
+import { useMutation, useQuery } from 'react-query';
 
 const Auth: React.FC = () => {
     const [isSignup, setIsSignup] = useState(false);
@@ -30,57 +31,81 @@ const Auth: React.FC = () => {
         setIsOrganisation(params.get('role') === 'organisation');
     }, [location]);
 
-    const handleAuth = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        try {
-            if (isSignup) {
-                const token = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
-                const newUserData = {
-                    id: Date.now(),
-                    username: formData.username,
-                    email: formData.email,
-                    password: formData.password,
-                    role: isOrganisation ? 'Organisation' as const : 'Team Member' as const,
-                    token,
-                    createdAt: new Date().toISOString(),
-                };
-
-                if (isOrganisation) {
-                    const orgData = {
-                        ...newUserData,
-                        organisationId: Date.now(),
-                        ownerId: newUserData.id,
-                    };
-                    await createOrganisation(orgData);
-                    toast.success('Organisation created successfully! Please login.');
-                } else {
-                    await createUser(newUserData);
-                    toast.success('Signup successful! Please login.');
+    const { refetch: refetchUser } = useQuery(
+        ['user', formData.username, formData.password],
+        () =>
+            isOrganisation
+                ? getOrgByCredentials(formData.username, formData.password)
+                : getUserByCredentials(formData.username, formData.password),
+        {
+            enabled: false,
+            onSuccess: (data) => {
+                if (!data) {
+                    toast.error('No account found with the provided credentials');
+                    return;
                 }
 
-                setIsSignup(false);
-                return;
+                const { password, ...userWithoutPassword } = data;
+                dispatch(setCredentials({ user: userWithoutPassword, token: data.token }));
+                localStorage.setItem('token', data.token);
+
+                navigate('/dashboard');
+                toast.success('Login successful');
+            },
+            onError: () => {
+                toast.error('Authentication failed. Please check your credentials.');
+            },
+        }
+    );
+
+    const createOrganisationMutation = useMutation(createOrganisation, {
+        onSuccess: () => {
+            toast.success('Organisation created successfully! Please login.');
+        },
+        onError: (error: any) => {
+            toast.error(error.message || 'Failed to create organisation');
+        },
+    });
+
+    const createUserMutation = useMutation(createUser, {
+        onSuccess: () => {
+            toast.success('Signup successful! Please login.');
+        },
+        onError: (error: any) => {
+            toast.error(error.message || 'Failed to create user');
+        },
+    });
+
+    const handleAuth = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const token = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
+
+        if (isSignup) {
+            const newUserData = {
+                id: Date.now(),
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                role: isOrganisation ? 'Organisation' as const : 'Team Member' as const,
+                token,
+                createdAt: new Date().toISOString(),
+            };
+
+            if (isOrganisation) {
+                const orgData = {
+                    ...newUserData,
+                    organisationId: Date.now(),
+                    ownerId: newUserData.id,
+                };
+                createOrganisationMutation.mutate(orgData);
+            } else {
+                createUserMutation.mutate(newUserData);
             }
 
-            const user = isOrganisation
-                ? await getOrgByCredentials(formData.username, formData.password)
-                : await getUserByCredentials(formData.username, formData.password);
-
-            if (!user) {
-                toast.error('No account found with the provided credentials');
-            }
-
-            const { password, ...userWithoutPassword } = user;
-
-            dispatch(setCredentials({ user: userWithoutPassword, token: user.token }));
-            localStorage.setItem('token', user.token);
-
-            navigate('/dashboard');
-            toast.success('Login successful');
-
-        } catch (error) {
-            console.log(error instanceof Error ? error.message : 'Authentication failed');
+            setIsSignup(false);
+        } else {
+            refetchUser();
         }
     };
 

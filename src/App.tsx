@@ -26,9 +26,12 @@ const UserDashboard = lazy(() => import('./pages/dashboards/UserDashboard'));
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
+import { QueryClient, QueryClientProvider } from 'react-query';
+
 const DashboardRedirect: React.FC = () => {
     const { user } = useAppSelector((state) => state.auth);
     const navigate = useNavigate();
+
 
     useEffect(() => {
         if (user) {
@@ -53,6 +56,8 @@ const DashboardRedirect: React.FC = () => {
 
 const App: React.FC = () => {
     const dispatch = useAppDispatch();
+    const queryClient = new QueryClient();
+
     const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
 
     useEffect(() => {
@@ -92,55 +97,58 @@ const App: React.FC = () => {
     }
 
     return (
-        <ErrorBoundary>
-            <AuthProvider>
-                <ProjectProvider>
-                    <TeamProvider>
-                        <Router>
-                            <Suspense fallback={<LoadingSpinner />}>
-                                <Routes>
-                                    <Route path="/" element={<LandingPage />} />
-                                    <Route path="/auth" element={
-                                        isAuthenticated ? <Navigate to="/dashboard" replace /> : <Auth />
-                                    } />
-                                    <Route
-                                        element={
-                                            <ProtectedRoute
-                                                allowedRoles={["Admin", "Organisation", "Project Manager", "Team Manager", "Team Member"]}
-                                            />
-                                        }
-                                    >
-                                        <Route path="/dashboard" element={<Dashboard />}>
-                                            <Route index element={<DashboardRedirect />} />
-                                            <Route path="admin">
-                                                {adminRoutes.children?.map((route) => (
-                                                    <Route
-                                                        key={route.path}
-                                                        path={route.path}
-                                                        element={route.element}
-                                                    />
-                                                ))}
+        <QueryClientProvider client={queryClient}>
+
+            <ErrorBoundary>
+                <AuthProvider>
+                    <ProjectProvider>
+                        <TeamProvider>
+                            <Router>
+                                <Suspense fallback={<LoadingSpinner />}>
+                                    <Routes>
+                                        <Route path="/" element={<LandingPage />} />
+                                        <Route path="/auth" element={
+                                            isAuthenticated ? <Navigate to="/dashboard" replace /> : <Auth />
+                                        } />
+                                        <Route
+                                            element={
+                                                <ProtectedRoute
+                                                    allowedRoles={["Admin", "Organisation", "Project Manager", "Team Manager", "Team Member"]}
+                                                />
+                                            }
+                                        >
+                                            <Route path="/dashboard" element={<Dashboard />}>
+                                                <Route index element={<DashboardRedirect />} />
+                                                <Route path="admin">
+                                                    {adminRoutes.children?.map((route) => (
+                                                        <Route
+                                                            key={route.path}
+                                                            path={route.path}
+                                                            element={route.element}
+                                                        />
+                                                    ))}
+                                                </Route>
+                                                <Route path="organisation">
+                                                    {organisationRoutes.children?.map((route) => (
+                                                        <Route
+                                                            key={route.path}
+                                                            path={route.path}
+                                                            element={route.element}
+                                                        />
+                                                    ))}
+                                                </Route>
+                                                <Route path="user" element={<UserDashboard />} />
                                             </Route>
-                                            <Route path="organisation">
-                                                {organisationRoutes.children?.map((route) => (
-                                                    <Route
-                                                        key={route.path}
-                                                        path={route.path}
-                                                        element={route.element}
-                                                    />
-                                                ))}
-                                            </Route>
-                                            <Route path="user" element={<UserDashboard />} />
                                         </Route>
-                                    </Route>
-                                    <Route path="*" element={<Navigate to="/" replace />} />
-                                </Routes>
-                            </Suspense>
-                        </Router>
-                    </TeamProvider>
-                </ProjectProvider>
-            </AuthProvider>
-        </ErrorBoundary>
+                                        <Route path="*" element={<Navigate to="/" replace />} />
+                                    </Routes>
+                                </Suspense>
+                            </Router>
+                        </TeamProvider>
+                    </ProjectProvider>
+                </AuthProvider>
+            </ErrorBoundary>
+        </QueryClientProvider>
     );
 };
 

@@ -15,6 +15,8 @@ import toast from 'react-hot-toast';
 import teamServices from '../../../api/services/teamServices';
 import userServices from '../../../api/services/userServices';
 
+
+
 type selectedMember = User | null;
 
 const UserDashboard = () => {
@@ -128,9 +130,6 @@ const UserDashboard = () => {
         getTeams();
     }, []);
 
-    // const handleTaskDetailPopup = () => {
-    //     setIsPopupOpen(!isPopupOpen);
-    // }
     const fetchTasks = async () => {
         try {
             const tasks = await taskServices.getAllTasks();

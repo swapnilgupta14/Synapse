@@ -1,20 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery } from "react-query";
 import ProjectCard from "../../../components/ui/ProjectCard";
 import { Project } from "../../../types";
 import projectServices from "../../../api/services/projectServices";
 
 const AllProjects: React.FC = () => {
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-
-  useEffect(() => {
-    const getProjects = async () => {
-      const projects = await projectServices.getAllProjects();
-      if (projects) {
-        setAllProjects(projects);
+  const { data: allProjects = [], isLoading, error } = useQuery<Project[], Error>(
+    'projects',
+    projectServices.getAllProjects,
+    {
+      initialData: [],
+      onError: (error) => {
+        console.error('Error fetching projects:', error);
       }
     }
-    getProjects();
-  }, []);
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-gray-500">Loading projects...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-red-500">Error loading projects: {error.message}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6">
@@ -24,7 +40,6 @@ const AllProjects: React.FC = () => {
             All Projects ({allProjects.length})
           </h1>
         </div>
-
         {allProjects.length === 0 ? (
           <div className="text-center text-gray-400 py-12">No projects found</div>
         ) : (
