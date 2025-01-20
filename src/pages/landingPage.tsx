@@ -172,15 +172,15 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div className="order-1 md:order-2">
-              <div className="bg-gray-950 rounded-2xl p-2 md:p-3 lg:p-3 shadow-2xl md:w-[65vw]">
+              <div className="bg-gray-950 rounded-2xl p-2 md:p-3 lg:p-3 shadow-2xl md:w-[80vw]">
                 <img
                   src="/image.png"
                   alt="Synapse dashboard showing task management interface with various features and analytics"
                   className={`rounded-lg shadow-xl w-full h-auto object-cover ${imagesLoaded ? 'opacity-100' : 'opacity-0'
                     } transition-opacity duration-300`}
                   loading="lazy"
-                  width="800"
-                  height="600"
+                  width="600"
+                  height="400"
                 />
               </div>
             </div>
@@ -194,7 +194,8 @@ const LandingPage: React.FC = () => {
       >
         <div className="container mx-auto max-w-full lg:max-w-full">
           <div className="flex flex-col gap-12 items-center">
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden w-full lg:w-[85%] h-[50vh]">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden w-full lg:w-[85%] h-[50vh]"
+              style={{ minHeight: '400px' }}>
               <img
                 src="https://res.cloudinary.com/dml6gxfmn/image/upload/v1735850133/my-profit-tutor-ZfRWq1bRisE-unsplash_gmmrye.jpg"
                 className="w-full h-full object-cover"
@@ -202,6 +203,7 @@ const LandingPage: React.FC = () => {
                 loading="lazy"
                 width="1200"
                 height="800"
+                style={{ aspectRatio: '3/2' }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
                 <div className="absolute bottom-0 p-6 sm:p-8 text-white">
