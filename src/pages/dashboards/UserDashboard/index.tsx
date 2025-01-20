@@ -15,7 +15,71 @@ import toast from 'react-hot-toast';
 import teamServices from '../../../api/services/teamServices';
 import userServices from '../../../api/services/userServices';
 
+import { useDrag, useDrop } from 'react-dnd';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
+const DraggableTaskItem = ({ task, onTaskClick }: { task: Task, onTaskClick: (task: Task) => void }) => {
+    const [{ isDragging }, drag] = useDrag({
+        type: 'TASK',
+        item: { type: 'TASK', taskId: task.taskId },
+        collect: (monitor) => ({
+            isDragging: !!monitor.isDragging(),
+        }),
+    });
+
+    return (
+        <div
+            ref={drag}
+            onClick={() => onTaskClick(task)}
+            style={{ opacity: isDragging ? 0.5 : 1 }}
+            className={`cursor-pointer text-xs p-1 rounded ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                }`}
+        >
+            <div className="truncate">{task.title}</div>
+        </div>
+    );
+};
+
+const CalendarDay = ({ day, tasks, currentDate, onTaskDrop, onTaskClick }: { day: number | null, tasks: Task[], currentDate: Date, onTaskDrop: (taskId: number, newDate: Date) => void, onTaskClick: (task: Task) => void }) => {
+    const [{ isOver }, drop] = useDrop({
+        accept: 'TASK',
+        drop: (item: { taskId: number }) => {
+            if (day) {
+                const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                onTaskDrop(item.taskId, newDate);
+            }
+        },
+        collect: monitor => ({
+            isOver: !!monitor.isOver(),
+        }),
+    });
+
+    return (
+        <div
+            ref={drop}
+            className={`min-h-24 p-2 border rounded-lg ${day ? 'bg-white' : 'bg-gray-50'
+                } ${isOver ? 'bg-blue-50' : ''}`}
+        >
+            {day && (
+                <>
+                    <div className="font-medium text-gray-700 mb-1">{day}</div>
+                    <div className="space-y-1">
+                        {tasks.map(task => (
+                            <DraggableTaskItem
+                                key={task.taskId}
+                                task={task}
+                                onTaskClick={onTaskClick}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
 
 type selectedMember = User | null;
 
@@ -122,6 +186,7 @@ const UserDashboard = () => {
         const res = await teamServices.getAllTeams();
         if (res) {
             setAllTeams(res);
+            console.log(res)
             setManagedTeams(allTeams.filter((team: Team) => team?.teamManagerId === user?.id))
         }
     }
@@ -333,60 +398,70 @@ const UserDashboard = () => {
         navigate('/');
     };
 
+    const handleTaskDrop = async (taskId: number, newDate: Date) => {
+        try {
+            const task = tasks.find(t => t.taskId === taskId);
+            if (!task) return;
+
+            const { status, ...rest } = task;
+
+            const adjustedDate = new Date(newDate);
+            adjustedDate.setDate(adjustedDate.getDate() + 1);
+
+            const updatedTask = {
+                ...rest,
+                dueDate: adjustedDate.toISOString().split('T')[0],
+                status: status === 'archieved' ? 'pending' : status
+            };
+
+            await taskServices.editTask(taskId, updatedTask);
+            toast.success('Task date updated successfully');
+            fetchTasks();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'An unexpected error occurred');
+        }
+    };
+
     const renderCalendarView = () => {
         const monthData = getMonthData();
         const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg">
-                        <ChevronLeft size={20} />
-                    </button>
-                    <h2 className="text-xl font-semibold">
-                        {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                    </h2>
-                    <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg">
-                        <ChevronRight size={20} />
-                    </button>
-                </div>
-                <div className="grid grid-cols-7 gap-4">
-                    {weekDays.map(day => (
-                        <div key={day} className="text-center font-medium text-gray-600 py-2">
-                            {day}
-                        </div>
-                    ))}
-                    {monthData.map((day, index) => {
-                        const tasksForDay = getTasksForDate(day);
-                        return (
-                            <div
-                                key={index}
-                                className={`min-h-24 p-2 border rounded-lg ${day ? 'bg-white' : 'bg-gray-50'
-                                    }`}
-                            >
-                                {day && (
-                                    <>
-                                        <div className="font-medium text-gray-700 mb-1">{day}</div>
-                                        <div className="space-y-1">
-                                            {tasksForDay.map(task => (
-                                                <div
-                                                    key={task.taskId}
-                                                    className={`text-xs p-1 rounded ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                                            'bg-green-100 text-green-800'
-                                                        }`}
-                                                >
-                                                    <div className="truncate">{task.title}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
+            <DndProvider backend={HTML5Backend}>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg">
+                            <ChevronLeft size={20} />
+                        </button>
+                        <h2 className="text-xl font-semibold">
+                            {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        </h2>
+                        <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg">
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-4">
+                        {weekDays.map(day => (
+                            <div key={day} className="text-center font-medium text-gray-600 py-2">
+                                {day}
                             </div>
-                        );
-                    })}
+                        ))}
+                        {monthData.map((day, index) => (
+                            <CalendarDay
+                                key={index}
+                                day={day}
+                                tasks={getTasksForDate(day)}
+                                currentDate={currentDate}
+                                onTaskDrop={handleTaskDrop}
+                                onTaskClick={(task: Task) => {
+                                    setSelectedTask(task);
+                                    setIsPopupOpen(true);
+                                }}
+                            />
+                        ))}
+                    </div>
                 </div>
-            </div>
+            </DndProvider>
         );
     };
 
@@ -778,7 +853,7 @@ const UserDashboard = () => {
                                                     }}
                                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                                                 >
-                                                    <option value="" >Select a team</option>
+                                                    <option value="" >{managedTeams.length < 1 ? "No Teams are Managed" : "Select a team"}</option>
                                                     {managedTeams.map((team) => (
                                                         <option key={team.teamId} value={team.teamId}>
                                                             {team.name}
