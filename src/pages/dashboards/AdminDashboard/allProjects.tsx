@@ -4,6 +4,7 @@ import ProjectCard from "../../../components/ui/ProjectCard";
 import { Project } from "../../../types";
 import projectServices from "../../../api/services/projectServices";
 
+
 const AllProjects: React.FC = () => {
   const { data: allProjects = [], isLoading, error } = useQuery<Project[], Error>(
     'projects',

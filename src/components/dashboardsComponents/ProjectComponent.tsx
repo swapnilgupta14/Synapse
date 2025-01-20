@@ -1,6 +1,6 @@
-import React, { useState, memo } from 'react';
+import React, { useState } from 'react';
+import { useProjects } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
     Folder,
     Plus,
@@ -13,11 +13,12 @@ import {
 import { Project } from '../../types';
 import ProjectDetailsView from './ProjectDetailsView';
 
-const ProjectsComponent: React.FC = memo(() => {
-    const queryClient = useQueryClient();
+const ProjectsComponent: React.FC = () => {
+    const { projects, createProject, deleteProject, loading } = useProjects();
     const { user } = useAuth();
 
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newProject, setNewProject] = useState({
         name: '',
@@ -26,56 +27,11 @@ const ProjectsComponent: React.FC = memo(() => {
         endDate: ''
     });
 
-    const { data: projects = [], isLoading } = useQuery(
-        ['projects', user?.organisationId],
-        async () => {
-            // Replace this with your actual API call
-            const response = await fetch(`/api/projects?organisationId=${user?.organisationId}`);
-            if (!response.ok) throw new Error('Failed to fetch projects');
-            return response.json();
-        },
-        {
-            enabled: !!user?.organisationId,
-        }
-    );
-
-    const createProjectMutation = useMutation(
-        async (newProjectData: Project) => {
-            const response = await fetch('/api/projects', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newProjectData),
-            });
-            if (!response.ok) throw new Error('Failed to create project');
-            return response.json();
-        },
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries(['projects', user?.organisationId]);
-            },
-        }
-    );
-
-    const deleteProjectMutation = useMutation(
-        async (projectId: number) => {
-            const response = await fetch(`/api/projects/${projectId}`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) throw new Error('Failed to delete project');
-            return response.json();
-        },
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries(['projects', user?.organisationId]);
-            },
-        }
-    );
-
     const handleCreateProject = async () => {
         if (!newProject.name || !user?.organisationId) return;
 
-        const customId = new Date().getTime();
-        await createProjectMutation.mutateAsync({
+        const customId = new Date().getTime()
+        await createProject({
             projectId: customId,
             id: customId,
             name: newProject.name,
@@ -99,10 +55,10 @@ const ProjectsComponent: React.FC = memo(() => {
     };
 
     const handleDeleteProject = async (projectId: number) => {
-        await deleteProjectMutation.mutateAsync(projectId);
+        await deleteProject(projectId);
     };
 
-    if (isLoading) {
+    if (loading) {
         return <div>Loading...</div>;
     }
 
@@ -125,7 +81,7 @@ const ProjectsComponent: React.FC = memo(() => {
 
             {projects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {projects.map((project: Project) => (
+                    {projects.map((project) => (
                         <div
                             key={project.projectId}
                             onClick={() => setSelectedProject(project)}
@@ -141,12 +97,8 @@ const ProjectsComponent: React.FC = memo(() => {
                                     </p>
                                 </div>
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteProject(project.projectId);
-                                    }}
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.projectId) }}
                                     className="bg-red-500 hover:bg-red-700 transition text-white p-1 rounded-full"
-                                    disabled={deleteProjectMutation.isLoading}
                                 >
                                     <Trash2 size={12} />
                                 </button>
@@ -181,6 +133,7 @@ const ProjectsComponent: React.FC = memo(() => {
                     No projects found. Create your first project!
                 </div>
             )}
+
 
             {selectedProject && (
                 <ProjectDetailsView
@@ -269,10 +222,10 @@ const ProjectsComponent: React.FC = memo(() => {
 
                             <button
                                 onClick={handleCreateProject}
-                                disabled={!newProject.name || createProjectMutation.isLoading}
+                                disabled={!newProject.name}
                                 className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {createProjectMutation.isLoading ? 'Creating...' : 'Create Project'}
+                                Create Project
                             </button>
                         </div>
                     </div>
@@ -280,7 +233,6 @@ const ProjectsComponent: React.FC = memo(() => {
             )}
         </div>
     );
-});
+};
 
-ProjectsComponent.displayName = "ProjectsComponent";
 export default ProjectsComponent;
