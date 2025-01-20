@@ -88,7 +88,7 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     const img = new Image();
-    img.src = "/image.png";
+    img.src = "/image.webp";
     img.onload = () => setImagesLoaded(true);
   }, []);
 
@@ -174,11 +174,11 @@ const LandingPage: React.FC = () => {
             <div className="order-1 md:order-2">
               <div className="bg-gray-950 rounded-2xl p-2 md:p-3 lg:p-3 shadow-2xl md:w-[80vw]">
                 <img
-                  src="/image.png"
+                  src="/image.webp"
                   alt="Synapse dashboard showing task management interface with various features and analytics"
                   className={`rounded-lg shadow-xl w-full h-auto object-cover ${imagesLoaded ? 'opacity-100' : 'opacity-0'
                     } transition-opacity duration-300`}
-                  loading="lazy"
+                  // loading="lazy"
                   width="600"
                   height="400"
                 // style={{ aspectRatio: '4/3' }}
