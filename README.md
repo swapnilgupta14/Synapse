@@ -1,6 +1,8 @@
-# Simpplr - Enterprise Workflow and Collaboration Platform
+# Synapse - Enterprise Workflow and Collaboration Platform
 
-Simpplr is a comprehensive enterprise solution designed to streamline workflows and enhance collaboration. It empowers enterprises to create and manage projects efficiently, organize teams, allocate tasks to team members, and track progress seamlessly. Simpplr also supports personal task management, ensuring a unified and effortless workflow for individuals and teams.
+Synapse is a comprehensive enterprise solution designed to streamline workflows and enhance collaboration. It empowers enterprises to create and manage projects efficiently, organize teams, allocate tasks to team members, and track progress seamlessly. Synapse also supports personal task management, ensuring a unified and effortless workflow for individuals and teams.
+
+## Capestone Project - Simpplr Training
 
 ## 🚀 Features
 - **Project Management**: Create, update, and track project progress effortlessly.
