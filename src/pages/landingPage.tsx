@@ -105,13 +105,13 @@ const LandingPage: React.FC = () => {
       <main
         id="main-content"
         ref={mainContentRef}
-        className="flex-1 min-h-[90vh] flex items-center"
+        className="flex-1 min-h-[90vh] flex items-center w-screen"
         role="main"
         aria-label="Main content"
       >
-        <div className="container mx-auto px-4 sm:px-10 py-8 md:py-20 overflow-hidden">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center md:items-start">
-            <div className="ml-5 pt-10 text-center md:text-left space-y-6 order-2 md:order-1 md:mt-5">
+        <div className="py-8 md:py-20 overflow-hidden w-screen">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center md:items-start w-full">
+            <div className="ml-0 md:ml-24 p-6 text-center md:text-left space-y-6 order-2 md:order-1 md:mt-5">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
                 Streamline Team Tasks, Boost Productivity
               </h1>
@@ -171,7 +171,7 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div className="order-1 md:order-2">
-              <div className="bg-gray-950 rounded-2xl p-2 md:p-3 lg:p-3 shadow-2xl md:w-[80vw]">
+              <div className="bg-gray-950 rounded-2xl m-3 p-2 md:p-3 lg:p-3 shadow-2xl md:w-[80vw]">
                 <img
                   src="/image.webp"
                   alt="Synapse dashboard showing task management interface with various features and analytics"
