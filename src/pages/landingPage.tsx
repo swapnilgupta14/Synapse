@@ -105,13 +105,13 @@ const LandingPage: React.FC = () => {
       <main
         id="main-content"
         ref={mainContentRef}
-        className="flex-1 min-h-[90vh] flex items-center w-screen"
+        className="flex-1 min-h-[90vh] flex items-center max-w-full"
         role="main"
         aria-label="Main content"
       >
-        <div className="py-8 md:py-20 overflow-hidden w-screen">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center md:items-start w-full">
-            <div className="ml-0 md:ml-24 p-6 text-center md:text-left space-y-6 order-2 md:order-1 md:mt-5">
+        <div className="py-8 md:py-20 max-w-full overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center md:items-start w-full overflow-hidden">
+            <div className="ml-0 md:ml-20 p-6 text-center md:text-left space-y-6 order-2 md:order-1 md:mt-5">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
                 Streamline Team Tasks, Boost Productivity
               </h1>
