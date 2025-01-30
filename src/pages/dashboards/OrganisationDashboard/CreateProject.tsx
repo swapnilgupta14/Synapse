@@ -108,7 +108,7 @@ const CreateProject: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto flex flex-col items-center justify-start gap-4 h-screen">
+    <div className="flex flex-col items-center justify-start gap-4 h-screen">
       <header className="flex flex-col lg:flex-row w-full justify-between px-8 items-center py-4 pb-0 my-2">
         <div>
           <p className="text-xl font-medium text-gray-800">

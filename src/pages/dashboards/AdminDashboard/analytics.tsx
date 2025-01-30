@@ -194,7 +194,7 @@ const Analytics: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <div className="container mx-auto">
+      <div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Composition Overview */}
           <div className="bg-white shadow-md rounded-lg p-6">

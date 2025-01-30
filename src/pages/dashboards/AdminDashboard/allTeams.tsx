@@ -41,7 +41,7 @@ const AllTeams: React.FC = () => {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="container mx-auto">
+      <div>
         <h1 className="text-xl font-semibold text-gray-800 mb-6">
           All Teams ({allTeams.length})
         </h1>

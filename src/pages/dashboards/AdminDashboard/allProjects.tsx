@@ -35,7 +35,7 @@ const AllProjects: React.FC = () => {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="container mx-auto">
+      <div>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl font-semibold text-black">
             All Projects ({allProjects.length})
